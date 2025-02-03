@@ -36,13 +36,13 @@ export const generateBoard = (rows: number, cols: number, bombs: number): BoardD
 	return board;
 };
 
-export function revealCell(board: BoardData, row: number, col: number): BoardData {
+export function revealCell(board: BoardData, row: number, col: number) {
 	if (row < 0 || row >= board.length || col < 0 || col >= board[0].length) {
-		return board;
+		return;
 	}
 
   if (board[row][col].revealed) {
-		return board;
+		return;
 	}
 
 	board[row][col].revealed = true;
@@ -57,5 +57,5 @@ export function revealCell(board: BoardData, row: number, col: number): BoardDat
 		}
 	}
 
-	return board;
+	return;
 }
