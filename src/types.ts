@@ -1,11 +1,13 @@
-export interface ICell
+export interface CellData
 {
   revealed : boolean;
   flagged : boolean;
   value : "bomb" | number;
 }
 
-export interface IGame
+export type BoardData = CellData[][];
+
+export interface GameData
 {
-  board :ICell[][]
+  board :BoardData;
 }
