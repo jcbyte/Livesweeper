@@ -1,12 +1,12 @@
 import type React from "react";
-import { ICell } from "../types";
+import { CellData } from "../types";
 
 export default function Cell({
 	cell,
 	onClick,
 	onRightClick,
 }: {
-	cell: ICell;
+	cell: CellData;
 	onClick: () => void;
 	onRightClick: () => void;
 }): React.ReactElement {

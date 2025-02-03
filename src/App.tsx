@@ -1,15 +1,16 @@
 import { useState } from "react";
 import "./App.css";
-import Cell from "./components/Cell";
-import { IGame } from "./types";
+import Board from "./components/Board";
+import { GameData } from "./types";
+import { generateBoard } from "./util/minesweeperLogic";
 
 export default function App() {
-	const [game, setGame] = useState<IGame>();
+	const [game, setGame] = useState<GameData>({board:generateBoard(10, 10, 5)} as GameData);
 
 	return (
 		<>
 			Hello World
-			<Cell cell={{ revealed: false, flagged: true, value: 0 }} onClick={() => {}} onRightClick={() => {}} />
+			<Board board={game.board} onCellClick={() => {}} onCellRightClick={() => {}} />
 		</>
 	);
 }

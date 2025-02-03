@@ -1,5 +1,5 @@
 import type React from "react";
-import { ICell } from "../types";
+import { BoardData } from "../types";
 import Cell from "./Cell";
 
 export default function Board({
@@ -7,7 +7,7 @@ export default function Board({
 	onCellClick,
 	onCellRightClick,
 }: {
-	board: ICell[][];
+	board: BoardData;
 	onCellClick: (row: number, col: number) => void;
 	onCellRightClick: (row: number, col: number) => void;
 }): React.ReactElement {
