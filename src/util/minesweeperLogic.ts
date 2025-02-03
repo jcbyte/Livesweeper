@@ -1,6 +1,8 @@
 import { BoardData, CellData } from "../types";
 
 export const generateBoard = (rows: number, cols: number, bombs: number): BoardData => {
+	bombs = Math.min(bombs, rows * cols);
+
 	const board: BoardData = Array(rows)
 		.fill(null)
 		.map(() =>
@@ -41,7 +43,7 @@ export function revealCell(board: BoardData, row: number, col: number) {
 		return;
 	}
 
-  if (board[row][col].revealed) {
+	if (board[row][col].revealed) {
 		return;
 	}
 

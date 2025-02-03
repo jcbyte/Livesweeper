@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
-:root {
+#root {
 	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
 
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
+  @apply h-screen m-0 p-0;
+  @apply text-white bg-gray-800 bg-gradient-to-br from-pink-900 to-purple-900;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -15,7 +15,18 @@
 }
 
 body {
-	margin: 0;
-	min-width: 320px;
-	min-height: 100vh;
+	@apply m-0 max-h-screen;
+}
+
+input {
+  @apply rounded-lg p-3;
+  @apply transition duration-300;
+}
+
+input[type="button"] {
+  @apply border border-gray-900/0 hover:border-gray-900/60 hover:rounded-xl;
+}
+
+input[type="text"] {
+  @apply border border-gray-900/0 hover:rounded-xl focus:rounded-xl focus:outline-none focus:border-white/60;
 }
