@@ -9,7 +9,7 @@ export default function App() {
 	return (
 		<>
 			Hello World
-			<Cell cell={{ revealed: false, flagged: true, value: 0 }} onClick={() => {}} onLeftClick={() => {}} />
+			<Cell cell={{ revealed: false, flagged: true, value: 0 }} onClick={() => {}} onRightClick={() => {}} />
 		</>
 	);
 }

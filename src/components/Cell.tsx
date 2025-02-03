@@ -4,11 +4,11 @@ import { ICell } from "../types";
 export default function Cell({
 	cell,
 	onClick,
-	onLeftClick,
+	onRightClick,
 }: {
 	cell: ICell;
 	onClick: () => void;
-	onLeftClick: () => void;
+	onRightClick: () => void;
 }): React.ReactElement {
 	const cellContent = () => {
 		if (cell.flagged) return "🚩";
@@ -27,7 +27,10 @@ export default function Cell({
 					: "bg-gray-300 hover:bg-gray-400 cursor-pointer"
 			}`}
 			onClick={onClick}
-			onContextMenu={onLeftClick}
+			onContextMenu={(e: React.MouseEvent) => {
+				e.preventDefault();
+				onRightClick();
+			}}
 		>
 			{cellContent()}
 		</div>
