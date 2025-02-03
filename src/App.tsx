@@ -5,7 +5,7 @@ import { GameData } from "./types";
 import { generateBoard } from "./util/minesweeperLogic";
 
 export default function App() {
-	const [game, setGame] = useState<GameData>({board:generateBoard(10, 10, 5)} as GameData);
+	const [game, setGame] = useState<GameData>({ board: generateBoard(10, 10, 5) } as GameData);
 
 	return (
 		<>
