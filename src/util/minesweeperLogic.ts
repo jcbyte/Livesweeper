@@ -3,7 +3,11 @@ import { BoardData, CellData } from "../types";
 export const generateBoard = (rows: number, cols: number, bombs: number): BoardData => {
 	const board: BoardData = Array(rows)
 		.fill(null)
-		.map(() => Array(cols).fill({ revealed: false, flagged: false, value: 0 } as CellData));
+		.map(() =>
+			Array(cols)
+				.fill(null)
+				.map(() => ({ revealed: false, flagged: false, value: 0 } as CellData))
+		);
 	let minesPlaced = 0;
 
 	while (minesPlaced < bombs) {
@@ -17,6 +21,8 @@ export const generateBoard = (rows: number, cols: number, bombs: number): BoardD
 			// Increment the count for adjacent cells
 			for (let i = -1; i <= 1; i++) {
 				for (let j = -1; j <= 1; j++) {
+					if (i === 0 && j === 0) continue;
+
 					const newRow = row + i;
 					const newCol = col + j;
 					if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && board[newRow][newCol].value !== "bomb") {
@@ -29,3 +35,27 @@ export const generateBoard = (rows: number, cols: number, bombs: number): BoardD
 
 	return board;
 };
+
+export function revealCell(board: BoardData, row: number, col: number): BoardData {
+	if (row < 0 || row >= board.length || col < 0 || col >= board[0].length) {
+		return board;
+	}
+
+  if (board[row][col].revealed) {
+		return board;
+	}
+
+	board[row][col].revealed = true;
+
+	if (board[row][col].value === 0) {
+		for (let i = -1; i <= 1; i++) {
+			for (let j = -1; j <= 1; j++) {
+				if (i === 0 && j === 0) continue;
+
+				revealCell(board, row + i, col + j);
+			}
+		}
+	}
+
+	return board;
+}

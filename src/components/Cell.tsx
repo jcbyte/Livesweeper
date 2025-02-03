@@ -19,7 +19,7 @@ export default function Cell({
 
 	return (
 		<div
-			className={`w-8 h-8 border border-gray-400 flex items-center justify-center font-bold ${
+			className={`w-8 h-8 text-gray-900 border border-gray-400 flex items-center justify-center font-bold ${
 				cell.revealed
 					? cell.value === -1
 						? "bg-red-500"
