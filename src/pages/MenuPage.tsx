@@ -4,7 +4,7 @@ import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
-import { createGame, listGameCodes } from "../firebase/db";
+import { createGame, doesGameExist } from "../firebase/db";
 import { GameData } from "../types";
 import { generateBoard } from "../util/minesweeperLogic";
 
@@ -60,8 +60,7 @@ export default function MenuPage() {
 							isDisabled={creatingGame}
 							onPress={async () => {
 								setVerifyingCode(true);
-								let gamesList: string[] = await listGameCodes();
-								if (gamesList.includes(inputCode)) {
+								if (await doesGameExist(inputCode)) {
 									joinGame(inputCode);
 								} else {
 									handleJoinShake();

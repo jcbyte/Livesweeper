@@ -1,8 +1,10 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
+import { doesGameExist } from "../firebase/db";
 import { GameData } from "../types";
 import { generateBoard, revealCell } from "../util/minesweeperLogic";
 
@@ -12,12 +14,26 @@ export default function GamePage() {
 	const [game, setGame] = useState<GameData>({ board: generateBoard(10, 10, 10) });
 
 	const navigate = useNavigate();
+	const alert = useAlert();
 
-	// todo error if game does not exist
 	// todo show nicer
 	// todo use actual data
 	// todo live data
 	// todo live users position
+
+	const [gameLoaded, setGameLoaded] = useState<boolean>(false);
+	useEffect(() => {
+		const checkGameExists = async () => {
+			if (!code || !(await doesGameExist(code))) {
+				navigate("/");
+				alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
+			} else {
+				setGameLoaded(true);
+			}
+		};
+
+		checkGameExists();
+	}, []);
 
 	return (
 		<>
@@ -40,7 +56,8 @@ export default function GamePage() {
 					<Snippet symbol="">{code}</Snippet>
 				</div>
 
-				<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
+				{/* use gameLoaded here to show skeleton board? */}
+				<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg">
 					{game && (
 						<Board
 							board={game.board}

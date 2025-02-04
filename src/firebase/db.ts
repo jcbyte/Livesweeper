@@ -5,7 +5,7 @@ import { db } from "./firebase";
 const CODE_LIST_PATH = "/codes";
 const GAMES_PATH = "/games";
 
-export async function listGameCodes(): Promise<string[]> {
+async function listGameCodes(): Promise<string[]> {
 	try {
 		const gamesSnapshot: DataSnapshot = await get(ref(db, CODE_LIST_PATH));
 
@@ -17,6 +17,11 @@ export async function listGameCodes(): Promise<string[]> {
 	} catch (error) {
 		throw new Error(`Error fetching data: ${error}`);
 	}
+}
+
+export async function doesGameExist(code: string): Promise<boolean> {
+	let gameCodes: string[] = await listGameCodes();
+	return gameCodes.includes(code);
 }
 
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
