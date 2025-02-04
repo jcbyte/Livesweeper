@@ -4,7 +4,7 @@ import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
-import { listGames } from "../firebase/db";
+import { createGame, listGameCodes } from "../firebase/db";
 
 type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
 const BOARD_SIZES: BoardSizeData[] = [
@@ -32,6 +32,10 @@ export default function MenuPage() {
 		});
 	}
 
+	function joinGame(code: string) {
+		navigate(`/game?${code}`);
+	}
+
 	return (
 		<div className="flex justify-center items-center h-full">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
@@ -52,9 +56,9 @@ export default function MenuPage() {
 							isLoading={verifyingCode}
 							onPress={async () => {
 								setVerifyingCode(true);
-								let gamesList: string[] = await listGames();
+								let gamesList: string[] = await listGameCodes();
 								if (gamesList.includes(inputCode)) {
-									navigate(`/game?${inputCode}`);
+									joinGame(inputCode);
 								} else {
 									handleJoinShake();
 									alert.openAlert({ color: "danger", title: "Could not find game" });
@@ -90,9 +94,10 @@ export default function MenuPage() {
 									key={i}
 									color="primary"
 									className="font-bold"
-									onPress={() => {
-										// todo create game
-										// todo join game
+									onPress={async () => {
+										// todo disable whislt create
+										let code: string = await createGame({ board: [] });
+										joinGame(code);
 									}}
 								>
 									{sizeData.name}
