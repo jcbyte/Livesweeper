@@ -1,6 +1,6 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
@@ -20,14 +20,24 @@ export default function MenuPage() {
 	const [creatingGame, setCreatingGame] = useState<boolean>(false);
 
 	const navigate = useNavigate();
-  const alert = useAlert();
+	const alert = useAlert();
+
+	const joinShakeAnimation = useAnimation();
+	async function handleJoinShake() {
+		await joinShakeAnimation.start({
+			x: [0, -8, 8, -8, 0],
+			transition: {
+				duration: 0.3,
+			},
+		});
+	}
 
 	return (
 		<div className="flex justify-center items-center h-full">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
-					<div className="flex gap-5 items-center">
+					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>
 						<Input variant="bordered" label="Code" type="text" value={inputCode} onValueChange={setInputCode} />
 						<Button
 							color="secondary"
@@ -38,14 +48,15 @@ export default function MenuPage() {
 								if (gamesList.includes(inputCode)) {
 									navigate(`/game?${inputCode}`);
 								} else {
-									alert.openAlert({color:"danger", title:"Could not find game"});
+									handleJoinShake();
+									alert.openAlert({ color: "danger", title: "Could not find game" });
 								}
 								setVerifyingCode(false);
 							}}
 						>
 							Join
 						</Button>
-					</div>
+					</motion.div>
 					<Button
 						color="primary"
 						onPress={() => {
