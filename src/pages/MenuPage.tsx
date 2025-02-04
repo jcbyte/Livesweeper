@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import { createGame, listGameCodes } from "../firebase/db";
+import { GameData } from "../types";
+import { generateBoard } from "../util/minesweeperLogic";
 
 type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
 const BOARD_SIZES: BoardSizeData[] = [
@@ -17,6 +19,7 @@ const BOARD_SIZES: BoardSizeData[] = [
 export default function MenuPage() {
 	const [inputCode, setInputCode] = useState<string>("");
 	const [verifyingCode, setVerifyingCode] = useState<boolean>(false);
+	const [creatingGameSelected, setCreatingGameSelected] = useState<boolean>(false);
 	const [creatingGame, setCreatingGame] = useState<boolean>(false);
 
 	const navigate = useNavigate();
@@ -54,6 +57,7 @@ export default function MenuPage() {
 						<Button
 							color="secondary"
 							isLoading={verifyingCode}
+							isDisabled={creatingGame}
 							onPress={async () => {
 								setVerifyingCode(true);
 								let gamesList: string[] = await listGameCodes();
@@ -71,8 +75,9 @@ export default function MenuPage() {
 					</motion.div>
 					<Button
 						color="primary"
+						isLoading={creatingGame}
 						onPress={() => {
-							setCreatingGame(!creatingGame);
+							setCreatingGameSelected(!creatingGameSelected);
 						}}
 					>
 						Create New Game
@@ -82,7 +87,7 @@ export default function MenuPage() {
 						className="flex gap-5 overflow-hidden"
 						initial={{ height: 0, marginTop: -10, marginBottom: -10 }}
 						animate={
-							creatingGame
+							creatingGameSelected
 								? { height: "auto", marginTop: 0, marginBottom: 0 }
 								: { height: 0, marginTop: -10, marginBottom: -10 }
 						}
@@ -94,10 +99,13 @@ export default function MenuPage() {
 									key={i}
 									color="primary"
 									className="font-bold"
+									isDisabled={creatingGame}
 									onPress={async () => {
-										// todo disable whislt create
-										let code: string = await createGame({ board: [] });
+										setCreatingGame(true);
+										let game: GameData = { board: generateBoard(sizeData.rows, sizeData.cols, sizeData.bombs) };
+										let code: string = await createGame(game);
 										joinGame(code);
+										setCreatingGame(false);
 									}}
 								>
 									{sizeData.name}
