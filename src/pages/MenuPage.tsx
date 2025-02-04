@@ -2,6 +2,7 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { listGames } from "../firebase/db";
 
 type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
@@ -13,7 +14,11 @@ const BOARD_SIZES: BoardSizeData[] = [
 ];
 
 export default function MenuPage() {
+	const [inputCode, setInputCode] = useState<string>("");
+	const [verifyingCode, setVerifyingCode] = useState<boolean>(false);
 	const [creatingGame, setCreatingGame] = useState<boolean>(false);
+
+  const navigate = useNavigate();
 
 	return (
 		<div className="flex justify-center items-center h-full">
@@ -21,12 +26,19 @@ export default function MenuPage() {
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<div className="flex gap-5 items-center">
-						<Input variant="bordered" label="Code" type="text" />
+						<Input variant="bordered" label="Code" type="text" value={inputCode} onValueChange={setInputCode} />
 						<Button
 							color="secondary"
-							onPress={() => {
-								console.log(listGames());
-								// todo check if game exists, if no join, if not show error
+							isLoading={verifyingCode}
+							onPress={async () => {
+								setVerifyingCode(true);
+								let gamesList: string[] = await listGames();
+								if (gamesList.includes(inputCode)) {
+									navigate(`/game?${inputCode}`); 
+								} else {
+									// todo show error
+								}
+								setVerifyingCode(false);
 							}}
 						>
 							Join
