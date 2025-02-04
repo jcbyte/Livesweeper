@@ -8,7 +8,7 @@
 	font-weight: 400;
 
   @apply h-screen m-0 p-0;
-  @apply text-white bg-gray-800 bg-gradient-to-br from-pink-900 to-purple-900;
+  @apply text-white bg-gray-800 bg-gradient-to-br from-pink-950 to-purple-950;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -18,22 +18,4 @@
 
 body {
 	@apply m-0 max-h-screen;
-}
-
-input {
-  @apply rounded-lg p-3;
-  @apply transition duration-300;
-}
-
-input[type="button"] {
-  @apply border border-gray-900/0 hover:border-gray-900/60 hover:rounded-xl;
-}
-
-input[type="text"] {
-  @apply border border-gray-900/0 hover:rounded-xl focus:rounded-xl focus:outline-none focus:border-white/60;
-}
-
-input[type="number"] {
-  @apply w-32;
-  @apply border border-gray-900/0 hover:rounded-xl focus:rounded-xl focus:outline-none focus:border-white/60;
 }
