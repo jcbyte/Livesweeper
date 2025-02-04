@@ -38,7 +38,15 @@ export default function MenuPage() {
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>
-						<Input variant="bordered" label="Code" type="text" value={inputCode} onValueChange={setInputCode} />
+						<Input
+							variant="bordered"
+							label="Code"
+							type="text"
+							value={inputCode}
+							onValueChange={(newValue: string) => {
+								setInputCode(newValue.toUpperCase());
+							}}
+						/>
 						<Button
 							color="secondary"
 							isLoading={verifyingCode}
