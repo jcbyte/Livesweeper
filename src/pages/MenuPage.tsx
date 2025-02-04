@@ -1,3 +1,4 @@
+import { Button } from "@heroui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { listGames } from "../firebase/db";
@@ -18,39 +19,38 @@ export default function MenuPage() {
 		<div className="flex justify-center items-center h-full">
 			<div className="bg-gray-900/60 p-8 rounded-lg shadow-lg min-w-md">
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
-				<div className="flex flex-col gap-6">
-					<div className="flex gap-6">
+				<div className="flex flex-col gap-5">
+					<div className="flex gap-5">
 						<input
 							type="text"
 							placeholder="Enter room code"
 							className="flex-grow bg-gray-900/60 focus:bg-gray-900/80 text-white placeholder-pink-200"
 						/>
-						<input
-							type="button"
-							className="bg-pink-600 hover:bg-pink-500 text-white active:bg-pink-400"
-							value="Join"
-							onClick={() => {
+						<Button
+							color="secondary"
+							onPress={() => {
 								console.log(listGames());
 								// todo check if game exists, if no join, if not show error
 							}}
-						/>
+						>
+							Join
+						</Button>
 					</div>
-
-					<input
-						type="button"
-						className="w-full bg-purple-600 hover:bg-purple-500 active:bg-purple-400 text-white"
-						value="Create New Game"
-						onClick={() => {
+					<Button
+						color="primary"
+						onPress={() => {
 							setCreatingGame(!creatingGame);
 						}}
-					/>
+					>
+						Create New Game
+					</Button>
 					<AnimatePresence>
 						{creatingGame && (
 							<motion.div
-								className="flex gap-6 overflow-hidden"
-								initial={{ height: 0, marginTop: -12, marginBottom: -12 }}
+								className="flex gap-5 overflow-hidden"
+								initial={{ height: 0, marginTop: -10, marginBottom: -10 }}
 								animate={{ height: "auto", marginTop: 0, marginBottom: 0 }}
-								exit={{ height: 0, marginTop: -12, marginBottom: -12 }}
+								exit={{ height: 0, marginTop: -10, marginBottom: -10 }}
 								transition={{ duration: 0.3 }}
 							>
 								{BOARD_SIZES.map((sizeData: BoardSizeData, i) => {
