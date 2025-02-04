@@ -36,7 +36,7 @@ export default function MenuPage() {
 	}
 
 	function joinGame(code: string) {
-		navigate(`/game?${code}`);
+		navigate(`/game/${code}`);
 	}
 
 	return (
