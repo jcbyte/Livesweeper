@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import { AlertProvider } from "./components/Alert";
+import ErrorPage from "./pages/ErrorPage";
 import GamePage from "./pages/GamePage";
 import MenuPage from "./pages/MenuPage";
-import Page404 from "./pages/Page404";
 
 export default function App() {
 	return (
@@ -10,7 +10,7 @@ export default function App() {
 			<Routes>
 				<Route path="/" element={<MenuPage />} />
 				<Route path="/game/:code" element={<GamePage />} />
-				<Route path="*" element={<Page404 />} />
+				<Route path="*" element={<ErrorPage error="Error 404" description="Page not found" />} />
 			</Routes>
 		</AlertProvider>
 	);
