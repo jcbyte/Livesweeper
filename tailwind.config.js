@@ -4,7 +4,7 @@ const { heroui } = require("@heroui/theme");
 export default {
   content: [
     "./src/**/*.{html,js,ts,jsx,tsx}",
-    "./node_modules/@heroui/theme/dist/components/(button|input|ripple|spinner|form).js"
+    "./node_modules/@heroui/theme/dist/components/(alert|button|input|ripple|spinner|form).js"
   ],
 	theme: {
 		extend: {},

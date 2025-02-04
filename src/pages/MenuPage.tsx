@@ -3,6 +3,7 @@ import { Input } from "@heroui/input";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAlert } from "../components/Alert";
 import { listGames } from "../firebase/db";
 
 type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
@@ -18,7 +19,8 @@ export default function MenuPage() {
 	const [verifyingCode, setVerifyingCode] = useState<boolean>(false);
 	const [creatingGame, setCreatingGame] = useState<boolean>(false);
 
-  const navigate = useNavigate();
+	const navigate = useNavigate();
+  const alert = useAlert();
 
 	return (
 		<div className="flex justify-center items-center h-full">
@@ -34,9 +36,9 @@ export default function MenuPage() {
 								setVerifyingCode(true);
 								let gamesList: string[] = await listGames();
 								if (gamesList.includes(inputCode)) {
-									navigate(`/game?${inputCode}`); 
+									navigate(`/game?${inputCode}`);
 								} else {
-									// todo show error
+									alert.openAlert({color:"danger", title:"Could not find game"});
 								}
 								setVerifyingCode(false);
 							}}
@@ -55,6 +57,7 @@ export default function MenuPage() {
 
 					<motion.div
 						className="flex gap-5 overflow-hidden"
+						initial={{ height: 0, marginTop: -10, marginBottom: -10 }}
 						animate={
 							creatingGame
 								? { height: "auto", marginTop: 0, marginBottom: 0 }
