@@ -1,6 +1,15 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 
+type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
+const BOARD_SIZES: BoardSizeData[] = [
+	{ name: "S", rows: 9, cols: 9, bombs: 10 },
+	{ name: "M", rows: 16, cols: 16, bombs: 40 },
+	{ name: "L", rows: 16, cols: 30, bombs: 99 },
+	{ name: "XL", rows: 20, cols: 30, bombs: 150 },
+	{ name: "XXL", rows: 20, cols: 40, bombs: 10 },
+];
+
 export default function MenuPage() {
 	const [creatingGame, setCreatingGame] = useState<boolean>(false);
 
@@ -30,21 +39,24 @@ export default function MenuPage() {
 						{creatingGame && (
 							<motion.div
 								className="flex gap-6 overflow-hidden"
-								initial={{ height: 0, marginTop:-12, marginBottom:-12 }}
-								animate={{ height: "auto", marginTop:0, marginBottom:0 }}
-								exit={{ height: 0, marginTop:-12, marginBottom:-12 }}
+								initial={{ height: 0, marginTop: -12, marginBottom: -12 }}
+								animate={{ height: "auto", marginTop: 0, marginBottom: 0 }}
+								exit={{ height: 0, marginTop: -12, marginBottom: -12 }}
 								transition={{ duration: 0.3 }}
 							>
-								<input
-									type="number"
-									placeholder="Size"
-									className="flex-grow bg-gray-900/60 focus:bg-gray-900/80 text-white placeholder-pink-200"
-								/>
-								<input
-									type="number"
-									placeholder="Bombs"
-									className="flex-grow bg-gray-900/60 focus:bg-gray-900/80 text-white placeholder-pink-200"
-								/>
+								{BOARD_SIZES.map((sizeData: BoardSizeData, i) => {
+									return (
+										<input
+											key={i}
+											type="button"
+											className="flex-1 bg-pink-300 hover:bg-pink-400 active:bg-pink-500 text-black font-bold"
+											value={sizeData.name}
+											onClick={() => {
+												// todo start game
+											}}
+										/>
+									);
+								})}
 							</motion.div>
 						)}
 					</AnimatePresence>
