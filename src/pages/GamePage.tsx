@@ -1,4 +1,5 @@
 import { Button } from "@heroui/button";
+import { Snippet } from "@heroui/snippet";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Board from "../components/Board";
@@ -32,9 +33,12 @@ export default function GamePage() {
 			</Button>
 
 			<div className="flex flex-col items-center h-full pt-12">
-				<h1 className="text-4xl font-bold text-center text-pink-200">Livesweeper</h1>
+				<h1 className="text-4xl font-bold text-center text-pink-200 mb-2">Livesweeper</h1>
 
-				<h2 className="mb-8">Code: {code}</h2>
+				<div className="flex items-center gap-2 mb-8">
+					<h2 className="font-semibold">Code:</h2>
+					<Snippet symbol="">{code}</Snippet>
+				</div>
 
 				<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
 					{game && (
