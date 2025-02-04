@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { listGames } from "../firebase/db";
 
 type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
 const BOARD_SIZES: BoardSizeData[] = [
@@ -24,7 +25,15 @@ export default function MenuPage() {
 							placeholder="Enter room code"
 							className="flex-grow bg-gray-900/60 focus:bg-gray-900/80 text-white placeholder-pink-200"
 						/>
-						<input type="button" className="bg-pink-600 hover:bg-pink-500 text-white active:bg-pink-400" value="Join" />
+						<input
+							type="button"
+							className="bg-pink-600 hover:bg-pink-500 text-white active:bg-pink-400"
+							value="Join"
+							onClick={() => {
+								console.log(listGames());
+								// todo check if game exists, if no join, if not show error
+							}}
+						/>
 					</div>
 
 					<input
@@ -52,7 +61,8 @@ export default function MenuPage() {
 											className="flex-1 bg-pink-300 hover:bg-pink-400 active:bg-pink-500 text-black font-bold"
 											value={sizeData.name}
 											onClick={() => {
-												// todo start game
+												// todo create game
+												// todo join game
 											}}
 										/>
 									);
