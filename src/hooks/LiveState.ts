@@ -3,7 +3,7 @@ import diff, { Difference } from "microdiff";
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
 
-export function useLiveState<T>(path: string): [T | undefined, (newObject: T) => void] {
+export function useLiveState<T>(path: string): [T | undefined, (updater: (newObject: T) => T) => void] {
 	const [object, setObject] = useState<T>();
 
 	// async function syncLive() {
@@ -53,11 +53,14 @@ export function useLiveState<T>(path: string): [T | undefined, (newObject: T) =>
 		});
 	}
 
-	const updateObject = (newObject: T) => {
-		const changes: Difference[] = diff([object], [newObject]);
-		setObject(newObject);
-		writeChanges(changes);
-	};
+	function updateObject(updater: (newObject: T) => T) {
+		setObject((prev) => {
+			let newObject: T = updater(prev as T);
+			const changes: Difference[] = diff([object], [newObject]);
+			writeChanges(changes);
+			return newObject;
+		});
+	}
 
 	return [object, updateObject];
 }

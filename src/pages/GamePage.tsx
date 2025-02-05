@@ -4,14 +4,16 @@ import { Spinner } from "@heroui/spinner";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import Cursor from "../assets/Cursor";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import { doesGameExist, getGamePath, resetGame } from "../firebase/db";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
+import { getRandomColor } from "../util/randomUtil";
 
-const INACTIVE_TIME = 10000;
+const INACTIVE_TIME = 8000;
 
 function ActualGamePage({
 	code,
@@ -20,31 +22,36 @@ function ActualGamePage({
 }: {
 	code: string;
 	game: GameData;
-	setGame: (newObject: GameData) => void;
+	setGame: (updater: (newObject: GameData) => GameData) => void;
 }) {
 	const [restartingGame, setRestartingGame] = useState<boolean>(false);
 	const playerUuidRef = useRef<string>(uuidv4());
 	const boardRef = useRef<HTMLDivElement>(null);
 	const lastUpdateRef = useRef<number>(0);
 
-	// todo live users position
+	// todo delete old players
 	// todo delete old games
 	// todo animations
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		let now: number = Date.now();
 
-		let newGame: GameData = structuredClone(game);
+		setGame((prev) => {
+			let newGame: GameData = structuredClone(prev);
+			if (!newGame.players) {
+				newGame.players = {};
+			}
+			if (!(playerUuidRef.current in newGame.players)) {
+				newGame.players[playerUuidRef.current] = { x: 0, y: 0, lastActive: 0 };
+			}
 
-		if (!newGame.players) {
-			newGame.players = {};
-		}
-		if (!(playerUuidRef.current in newGame.players)) {
-			newGame.players[playerUuidRef.current] = { x: 0, y: 0, lastActive: 0 };
-		}
-
-		newGame.players[playerUuidRef.current] = { ...newGame.players[playerUuidRef.current], ...newData, lastActive: now };
-		setGame(newGame);
+			newGame.players[playerUuidRef.current] = {
+				...newGame.players[playerUuidRef.current],
+				...newData,
+				lastActive: now,
+			};
+			return newGame;
+		});
 
 		lastUpdateRef.current = now;
 	}
@@ -92,7 +99,7 @@ function ActualGamePage({
 				</div>
 
 				<div className="max-w-[1024px] w-full px-8">
-					<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg w-full" ref={boardRef}>
+					<div className="relative bg-gray-900/40 p-8 rounded-lg shadow-lg w-full" ref={boardRef}>
 						<Board
 							game={game}
 							onCellClick={(row: number, col: number) => {
@@ -101,9 +108,11 @@ function ActualGamePage({
 								}
 
 								if (!game.board[row][col].flagged && !game.board[row][col].revealed) {
-									let newGame = structuredClone(game);
-									revealCell(newGame, row, col);
-									setGame(newGame);
+									setGame((prev) => {
+										let newGame = structuredClone(prev);
+										revealCell(newGame, row, col);
+										return newGame;
+									});
 								}
 							}}
 							onCellRightClick={(row: number, col: number) => {
@@ -112,12 +121,37 @@ function ActualGamePage({
 								}
 
 								if (!game.board[row][col].revealed) {
-									let newGame = structuredClone(game);
-									newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
-									setGame(newGame);
+									setGame((prev) => {
+										let newGame = structuredClone(prev);
+										newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
+										return newGame;
+									});
 								}
 							}}
 						/>
+
+						{game.players &&
+							Object.entries(game.players)
+								.filter(
+									([key, player]) => key != playerUuidRef.current && player.lastActive + INACTIVE_TIME > Date.now()
+								)
+								.map(([key, player]) => {
+									return (
+										<div
+											key={key}
+											className="absolute"
+											style={{
+												left: player.x * (boardRef.current?.getBoundingClientRect().width ?? 0),
+												top: player.y * (boardRef.current?.getBoundingClientRect().height ?? 0),
+											}}
+										>
+											<Cursor
+												colour={getRandomColor(key)}
+												size={(boardRef.current?.getBoundingClientRect().width ?? 0) / 16}
+											/>
+										</div>
+									);
+								})}
 					</div>
 				</div>
 
