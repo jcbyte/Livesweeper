@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import Cursor from "../assets/Cursor";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
-import { doesGameExist, getGamePath, resetGame } from "../firebase/db";
+import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../firebase/db";
 import { PLAYER_INACTIVE_TIME } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
@@ -28,7 +28,7 @@ function ActualGamePage({
 	const boardRef = useRef<HTMLDivElement>(null);
 	const lastUpdateRef = useRef<number>(0);
 
-	// todo delete old players + games
+	// todo QoL i.e. bombs
 	// todo animations
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
@@ -78,10 +78,16 @@ function ActualGamePage({
 			playerKeepAlive();
 		}, PLAYER_INACTIVE_TIME / 10);
 
+		cleanupPlayers(code);
+		const cleanupPlayersIntervalId = setInterval(() => {
+			cleanupPlayers(code);
+		}, 30 * 1000);
+
 		document.addEventListener("mousemove", handleMouseMove);
 
 		return () => {
 			clearInterval(keepAliveIntervalId);
+			clearInterval(cleanupPlayersIntervalId);
 			document.removeEventListener("mousemove", handleMouseMove);
 		};
 	}, []);

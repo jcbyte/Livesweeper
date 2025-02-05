@@ -1,7 +1,7 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { motion, useAnimation } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import { cleanupGames, createGame, doesGameExist } from "../firebase/db";
@@ -32,16 +32,13 @@ export default function MenuPage() {
 		navigate(`/game/${code}`);
 	}
 
+	useEffect(() => {
+		cleanupGames();
+	}, []);
+
 	return (
 		<div className="flex justify-center items-center h-full">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
-				<div
-					className="w-8 h-8 bg-red-500"
-					onClick={() => {
-						cleanupGames();
-					}}
-				/>
-
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>
@@ -92,7 +89,7 @@ export default function MenuPage() {
 						}
 						transition={{ duration: 0.3 }}
 					>
-						{BOARD_SIZES.map((sizeData, i) => {
+						{BOARD_SIZES.map((size, i) => {
 							return (
 								<Button
 									key={i}
@@ -101,13 +98,13 @@ export default function MenuPage() {
 									isDisabled={creatingGame}
 									onPress={async () => {
 										setCreatingGame(true);
-										let game: GameData = generateGame(sizeData);
+										let game: GameData = generateGame(size.sizeData);
 										let code: string = await createGame(game);
 										joinGame(code);
 										setCreatingGame(false);
 									}}
 								>
-									{sizeData.name}
+									{size.name}
 								</Button>
 							);
 						})}
