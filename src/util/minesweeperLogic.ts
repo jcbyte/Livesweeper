@@ -1,8 +1,4 @@
-import { BoardData, BoardSizeData, GameData } from "../types";
-
-export function generateGame(boardSize: BoardSizeData): GameData {
-	return { state: "play", board: generateBoard(boardSize), boardSize: boardSize };
-}
+import { BoardData, BoardSizeData, CellData, GameData } from "../types";
 
 function generateBoard(boardSize: BoardSizeData): BoardData {
 	let bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
@@ -48,25 +44,42 @@ function generateBoard(boardSize: BoardSizeData): BoardData {
 	return board;
 }
 
-export function revealCell(board: BoardData, row: number, col: number) {
-	if (row < 0 || row >= board.length || col < 0 || col >= board[0].length) {
+export function generateGame(boardSize: BoardSizeData): GameData {
+	return { state: "play", board: generateBoard(boardSize), boardSize: boardSize };
+}
+
+function loseGame(game: GameData) {
+	game.state = "lost";
+
+	game.board = game.board.map((row: CellData[]) => {
+		return row.map((cell: CellData) => {
+			console.log("hellkp?");
+			return { ...cell, revealed: true };
+		});
+	});
+}
+
+export function revealCell(game: GameData, row: number, col: number) {
+	if (row < 0 || row >= game.boardSize.rows || col < 0 || col >= game.boardSize.cols) {
 		return;
 	}
 
-	if (board[row][col].revealed) {
+	if (game.board[row][col].revealed) {
 		return;
 	}
 
-	board[row][col].revealed = true;
+	game.board[row][col].revealed = true;
 
-	if (board[row][col].value === 0) {
+	if (game.board[row][col].value === 0) {
 		for (let i = -1; i <= 1; i++) {
 			for (let j = -1; j <= 1; j++) {
 				if (i === 0 && j === 0) continue;
 
-				revealCell(board, row + i, col + j);
+				revealCell(game, row + i, col + j);
 			}
 		}
+	} else if (game.board[row][col].value === "bomb") {
+		loseGame(game);
 	}
 
 	return;

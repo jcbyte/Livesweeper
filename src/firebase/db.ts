@@ -38,10 +38,17 @@ export async function createGame(game: GameData): Promise<string> {
 	const gamesRef = ref(db, CODE_LIST_PATH);
 	await push(gamesRef, code);
 
-	const thisGameRef = ref(db, getGamePath(code));
-	set(thisGameRef, game);
+	const gameRef = ref(db, getGamePath(code));
+	set(gameRef, game);
 
 	return code;
+}
+
+export async function resetGame(code: string, game: GameData): Promise<void> {
+	if (await doesGameExist(code)) {
+		const gameRef = ref(db, getGamePath(code));
+		set(gameRef, game);
+	}
 }
 
 export function getGamePath(code: string) {

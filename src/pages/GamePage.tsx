@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
-import { doesGameExist, getGamePath } from "../firebase/db";
+import { doesGameExist, getGamePath, resetGame } from "../firebase/db";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData } from "../types";
-import { revealCell } from "../util/minesweeperLogic";
+import { generateGame, revealCell } from "../util/minesweeperLogic";
 
 function ActualGamePage({
 	code,
@@ -19,6 +19,7 @@ function ActualGamePage({
 	game: GameData;
 	setGame: (newObject: GameData) => void;
 }) {
+	const [restartingGame, setRestartingGame] = useState<boolean>(false);
 	// todo live users position
 
 	return (
@@ -34,11 +35,11 @@ function ActualGamePage({
 				<div className="max-w-[1024px] w-full px-8">
 					<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg w-full">
 						<Board
-							board={game.board}
+							game={game}
 							onCellClick={(row: number, col: number) => {
-								if (!game.board[row][col].flagged) {
+								if (!game.board[row][col].flagged && !game.board[row][col].revealed) {
 									let newGame = structuredClone(game);
-									revealCell(newGame.board, row, col);
+									revealCell(newGame, row, col);
 									setGame(newGame);
 								}
 							}}
@@ -52,6 +53,26 @@ function ActualGamePage({
 						/>
 					</div>
 				</div>
+
+				{game.state !== "play" && (
+					<>
+						<div className="text-4xl font-bold text-center text-pink-200 my-4">
+							{game.state === "win" ? "You Win" : "You Lost"}
+						</div>
+						<Button
+							color="primary"
+							isLoading={restartingGame}
+							onPress={async () => {
+								setRestartingGame(true);
+								let newGame: GameData = generateGame(game.boardSize);
+								await resetGame(code, newGame);
+								setRestartingGame(false);
+							}}
+						>
+							Restart
+						</Button>
+					</>
+				)}
 			</div>
 		</>
 	);
