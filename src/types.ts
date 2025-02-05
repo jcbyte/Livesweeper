@@ -6,7 +6,7 @@ export interface CellData {
 
 export type BoardData = CellData[][];
 
-export type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
+export type BoardSizeData = { rows: number; cols: number; bombs: number };
 
 export interface GameData {
 	state: "play" | "lost" | "win";

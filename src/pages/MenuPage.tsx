@@ -8,7 +8,7 @@ import { createGame, doesGameExist } from "../firebase/db";
 import { BoardSizeData, GameData } from "../types";
 import { generateGame } from "../util/minesweeperLogic";
 
-const BOARD_SIZES: BoardSizeData[] = [
+const BOARD_SIZES: (BoardSizeData & { name: string })[] = [
 	{ name: "S", rows: 9, cols: 9, bombs: 10 },
 	{ name: "M", rows: 16, cols: 16, bombs: 40 },
 	{ name: "L", rows: 30, cols: 16, bombs: 99 },
@@ -91,7 +91,7 @@ export default function MenuPage() {
 						}
 						transition={{ duration: 0.3 }}
 					>
-						{BOARD_SIZES.map((sizeData: BoardSizeData, i) => {
+						{BOARD_SIZES.map((sizeData, i) => {
 							return (
 								<Button
 									key={i}
