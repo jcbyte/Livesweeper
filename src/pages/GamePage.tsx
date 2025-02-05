@@ -8,12 +8,11 @@ import Cursor from "../assets/Cursor";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import { doesGameExist, getGamePath, resetGame } from "../firebase/db";
+import { PLAYER_INACTIVE_TIME } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
 import { getRandomColor } from "../util/randomUtil";
-
-const INACTIVE_TIME = 8000;
 
 function ActualGamePage({
 	code,
@@ -29,8 +28,7 @@ function ActualGamePage({
 	const boardRef = useRef<HTMLDivElement>(null);
 	const lastUpdateRef = useRef<number>(0);
 
-	// todo delete old players
-	// todo delete old games
+	// todo delete old players + games
 	// todo animations
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
@@ -58,7 +56,7 @@ function ActualGamePage({
 
 	function playerKeepAlive() {
 		// No need to update if it was updated more recently
-		if (lastUpdateRef.current + INACTIVE_TIME / 2 < Date.now()) {
+		if (lastUpdateRef.current + PLAYER_INACTIVE_TIME / 2 < Date.now()) {
 			updatePlayerData();
 		}
 	}
@@ -78,7 +76,7 @@ function ActualGamePage({
 	useEffect(() => {
 		const keepAliveIntervalId = setInterval(() => {
 			playerKeepAlive();
-		}, INACTIVE_TIME / 10);
+		}, PLAYER_INACTIVE_TIME / 10);
 
 		document.addEventListener("mousemove", handleMouseMove);
 
@@ -133,7 +131,8 @@ function ActualGamePage({
 						{game.players &&
 							Object.entries(game.players)
 								.filter(
-									([key, player]) => key != playerUuidRef.current && player.lastActive + INACTIVE_TIME > Date.now()
+									([key, player]) =>
+										key != playerUuidRef.current && player.lastActive + PLAYER_INACTIVE_TIME >= Date.now()
 								)
 								.map(([key, player]) => {
 									return (

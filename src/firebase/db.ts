@@ -1,5 +1,6 @@
-import { DataSnapshot, get, push, ref, set } from "firebase/database";
-import { GameData } from "../types";
+import { DataSnapshot, get, push, ref, remove, set } from "firebase/database";
+import { PLAYER_INACTIVE_TIME } from "../globals";
+import { GameData, PlayerData } from "../types";
 import { db } from "./firebase";
 
 const CODE_LIST_PATH = "/codes";
@@ -16,13 +17,13 @@ async function listGameCodes(): Promise<string[]> {
 }
 
 export async function doesGameExist(code: string): Promise<boolean> {
-	let gameCodes: string[] = await listGameCodes();
+	let gameCodes = await listGameCodes();
 	return gameCodes.includes(code);
 }
 
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 async function createCode(): Promise<string> {
-	let gameCodes: string[] = await listGameCodes();
+	let gameCodes = await listGameCodes();
 
 	let code: string;
 	do {
@@ -33,7 +34,7 @@ async function createCode(): Promise<string> {
 }
 
 export async function createGame(game: GameData): Promise<string> {
-	let code: string = await createCode();
+	let code = await createCode();
 
 	const gamesRef = ref(db, CODE_LIST_PATH);
 	await push(gamesRef, code);
@@ -53,4 +54,24 @@ export async function resetGame(code: string, game: GameData): Promise<void> {
 
 export function getGamePath(code: string) {
 	return `${GAMES_PATH}/${code}`;
+}
+
+export async function cleanupPlayers(code: string): Promise<void> {
+	let playersPath = `${getGamePath(code)}/players`;
+	const playersSnapshot = await get(ref(db, playersPath));
+
+	if (!playersSnapshot.exists) return;
+
+	let players: Record<string, PlayerData> = playersSnapshot.val();
+
+	let now = Date.now();
+	Object.entries(players).forEach(([key, player]) => {
+		if (player.lastActive + PLAYER_INACTIVE_TIME < now) {
+			remove(ref(db, `${playersPath}/${key}`));
+		}
+	});
+}
+
+export async function cleanupGames(): Promise<void> {
+	// todo
 }
