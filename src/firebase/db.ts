@@ -6,16 +6,12 @@ const CODE_LIST_PATH = "/codes";
 const GAMES_PATH = "/games";
 
 async function listGameCodes(): Promise<string[]> {
-	try {
-		const gamesSnapshot: DataSnapshot = await get(ref(db, CODE_LIST_PATH));
+	const gamesSnapshot: DataSnapshot = await get(ref(db, CODE_LIST_PATH));
 
-		if (gamesSnapshot.exists()) {
-			return Object.values(gamesSnapshot.val()) as string[];
-		} else {
-			return [];
-		}
-	} catch (error) {
-		throw new Error(`Error fetching data: ${error}`);
+	if (gamesSnapshot.exists()) {
+		return Object.values(gamesSnapshot.val()) as string[];
+	} else {
+		return [];
 	}
 }
 
@@ -38,15 +34,11 @@ async function createCode(): Promise<string> {
 
 export async function createGame(game: GameData): Promise<string> {
 	let code: string = await createCode();
-
 	const gamesRef = ref(db, CODE_LIST_PATH);
-	try {
-		await push(gamesRef, code);
-		const thisGameRef = ref(db, `${GAMES_PATH}/${code}`);
-		set(thisGameRef, game);
-	} catch (error) {
-		throw new Error(`Error creating game: ${error}`);
-	}
+
+	await push(gamesRef, code);
+	const thisGameRef = ref(db, `${GAMES_PATH}/${code}`);
+	set(thisGameRef, game);
 
 	return code;
 }
