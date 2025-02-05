@@ -1,24 +1,24 @@
-import { BoardData, CellData, GameData } from "../types";
+import { BoardData, BoardSizeData, GameData } from "../types";
 
-export function generateGame(board: BoardData): GameData {
-	return { board: board } as GameData;
+export function generateGame(boardSize: BoardSizeData): GameData {
+	return { state: "play", board: generateBoard(boardSize), boardSize: boardSize };
 }
 
-export function generateBoard(rows: number, cols: number, bombs: number): BoardData {
-	bombs = Math.min(bombs, rows * cols);
+function generateBoard(boardSize: BoardSizeData): BoardData {
+	let bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
 
-	const board: BoardData = Array(rows)
+	const board: BoardData = Array(boardSize.rows)
 		.fill(null)
 		.map(() =>
-			Array(cols)
+			Array(boardSize.cols)
 				.fill(null)
-				.map(() => ({ revealed: false, flagged: false, value: 0 } as CellData))
+				.map(() => ({ revealed: false, flagged: false, value: 0 }))
 		);
 	let minesPlaced = 0;
 
 	while (minesPlaced < bombs) {
-		const row = Math.floor(Math.random() * rows);
-		const col = Math.floor(Math.random() * cols);
+		const row = Math.floor(Math.random() * boardSize.rows);
+		const col = Math.floor(Math.random() * boardSize.cols);
 
 		if (board[row][col].value !== "bomb") {
 			board[row][col].value = "bomb";
@@ -31,7 +31,13 @@ export function generateBoard(rows: number, cols: number, bombs: number): BoardD
 
 					const newRow = row + i;
 					const newCol = col + j;
-					if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && board[newRow][newCol].value !== "bomb") {
+					if (
+						newRow >= 0 &&
+						newRow < boardSize.rows &&
+						newCol >= 0 &&
+						newCol < boardSize.cols &&
+						board[newRow][newCol].value !== "bomb"
+					) {
 						board[newRow][newCol].value++;
 					}
 				}

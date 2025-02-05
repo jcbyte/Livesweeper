@@ -5,10 +5,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import { createGame, doesGameExist } from "../firebase/db";
-import { GameData } from "../types";
-import { generateBoard, generateGame } from "../util/minesweeperLogic";
+import { BoardSizeData, GameData } from "../types";
+import { generateGame } from "../util/minesweeperLogic";
 
-type BoardSizeData = { name: string; rows: number; cols: number; bombs: number };
 const BOARD_SIZES: BoardSizeData[] = [
 	{ name: "S", rows: 9, cols: 9, bombs: 10 },
 	{ name: "M", rows: 16, cols: 16, bombs: 40 },
@@ -101,7 +100,7 @@ export default function MenuPage() {
 									isDisabled={creatingGame}
 									onPress={async () => {
 										setCreatingGame(true);
-										let game: GameData = generateGame(generateBoard(sizeData.rows, sizeData.cols, sizeData.bombs));
+										let game: GameData = generateGame(sizeData);
 										let code: string = await createGame(game);
 										joinGame(code);
 										setCreatingGame(false);
