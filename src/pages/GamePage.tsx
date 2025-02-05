@@ -19,7 +19,6 @@ function ActualGamePage({
 	game: GameData;
 	setGame: (newObject: GameData) => void;
 }) {
-	// todo show nicer
 	// todo live users position
 
 	return (
@@ -32,22 +31,26 @@ function ActualGamePage({
 					<Snippet symbol="">{code}</Snippet>
 				</div>
 
-				<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg">
-					{game && (
+				<div className="max-w-[1024px] w-full px-8">
+					<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg w-full">
 						<Board
 							board={game.board}
 							onCellClick={(row: number, col: number) => {
-								let newGame = structuredClone(game);
-								revealCell(newGame.board, row, col);
-								setGame(newGame);
+								if (!game.board[row][col].flagged) {
+									let newGame = structuredClone(game);
+									revealCell(newGame.board, row, col);
+									setGame(newGame);
+								}
 							}}
 							onCellRightClick={(row: number, col: number) => {
-								let newGame = structuredClone(game);
-								newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
-								setGame(newGame);
+								if (!game.board[row][col].revealed) {
+									let newGame = structuredClone(game);
+									newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
+									setGame(newGame);
+								}
 							}}
 						/>
-					)}
+					</div>
 				</div>
 			</div>
 		</>

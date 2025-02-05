@@ -7,8 +7,8 @@
 	line-height: 1.5;
 	font-weight: 400;
 
-  @apply h-screen m-0 p-0;
-  @apply text-white bg-gray-800 bg-gradient-to-br from-pink-950 to-purple-950;
+	@apply min-h-screen m-0 p-0;
+	@apply text-white bg-gray-800 bg-gradient-to-br from-pink-950 to-purple-950;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -17,5 +17,5 @@
 }
 
 body {
-	@apply m-0 max-h-screen;
+	@apply m-0 min-h-screen;
 }

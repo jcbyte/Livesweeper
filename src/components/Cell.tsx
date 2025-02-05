@@ -9,30 +9,31 @@ export default function Cell({
 	cell: CellData;
 	onClick: () => void;
 	onRightClick: () => void;
-}): React.ReactElement {
-	const cellContent = () => {
+}) {
+	function getCellContent() {
 		if (cell.flagged) return "🚩";
 		if (!cell.revealed) return "";
 		if (cell.value === "bomb") return "💣";
 		return cell.value === 0 ? "" : cell.value;
-	};
+	}
 
 	return (
 		<div
-			className={`w-8 h-8 text-gray-900 border border-gray-400 flex items-center justify-center font-bold ${
+			className={`min-h-5 aspect-square text-purple-200 border border-gray-900 rounded-md flex items-center justify-center font-bold transition-all duration-300 ease-in-out ${
 				cell.revealed
-					? cell.value === -1
-						? "bg-red-500"
-						: "bg-gray-200"
-					: "bg-gray-300 hover:bg-gray-400 cursor-pointer"
+					? cell.value === "bomb"
+						? "bg-pink-600"
+						: "bg-purple-900/50"
+					: "bg-purple-600 hover:bg-purple-400 cursor-pointer"
 			}`}
+			style={{ containerType: "inline-size" }}
 			onClick={onClick}
 			onContextMenu={(e: React.MouseEvent) => {
 				e.preventDefault();
 				onRightClick();
 			}}
 		>
-			{cellContent()}
+			<div style={{ fontSize: "65cqw" }}>{getCellContent()}</div>
 		</div>
 	);
 }

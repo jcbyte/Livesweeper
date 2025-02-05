@@ -1,6 +1,10 @@
-import { BoardData, CellData } from "../types";
+import { BoardData, CellData, GameData } from "../types";
 
-export const generateBoard = (rows: number, cols: number, bombs: number): BoardData => {
+export function generateGame(board: BoardData): GameData {
+	return { board: board } as GameData;
+}
+
+export function generateBoard(rows: number, cols: number, bombs: number): BoardData {
 	bombs = Math.min(bombs, rows * cols);
 
 	const board: BoardData = Array(rows)
@@ -36,7 +40,7 @@ export const generateBoard = (rows: number, cols: number, bombs: number): BoardD
 	}
 
 	return board;
-};
+}
 
 export function revealCell(board: BoardData, row: number, col: number) {
 	if (row < 0 || row >= board.length || col < 0 || col >= board[0].length) {
