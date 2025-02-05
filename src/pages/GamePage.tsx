@@ -20,7 +20,10 @@ function ActualGamePage({
 	setGame: (newObject: GameData) => void;
 }) {
 	const [restartingGame, setRestartingGame] = useState<boolean>(false);
+
 	// todo live users position
+	// todo delete old games
+	// todo animations
 
 	return (
 		<>
@@ -37,6 +40,10 @@ function ActualGamePage({
 						<Board
 							game={game}
 							onCellClick={(row: number, col: number) => {
+								if (game.state !== "play") {
+									return;
+								}
+
 								if (!game.board[row][col].flagged && !game.board[row][col].revealed) {
 									let newGame = structuredClone(game);
 									revealCell(newGame, row, col);
@@ -44,6 +51,10 @@ function ActualGamePage({
 								}
 							}}
 							onCellRightClick={(row: number, col: number) => {
+								if (game.state !== "play") {
+									return;
+								}
+
 								if (!game.board[row][col].revealed) {
 									let newGame = structuredClone(game);
 									newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
