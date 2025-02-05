@@ -82,5 +82,7 @@ export default function GamePageLoader() {
 		checkGameExists();
 	}, []);
 
+	// todo display loading
+
 	return <>{gameLoaded && <GamePage />}</>;
 }

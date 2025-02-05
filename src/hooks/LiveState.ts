@@ -1,4 +1,4 @@
-import { DataSnapshot, get, ref, remove, set } from "firebase/database";
+import { DataSnapshot, get, onChildAdded, onChildChanged, onChildRemoved, ref, remove, set } from "firebase/database";
 import diff, { Difference } from "microdiff";
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
@@ -14,8 +14,36 @@ export function useLiveState<T>(path: string): [T | undefined, (newObject: T) =>
 	}
 
 	useEffect(() => {
+		// Get initial data
 		syncLive();
-	}, []);
+
+		const handleChildChanged = (snapshot: DataSnapshot) => {
+			setObject((prev = {} as T) => ({ ...prev, [snapshot.key as keyof T]: snapshot.val() }));
+		};
+
+		const handleChildRemoved = (snapshot: DataSnapshot) => {
+			setObject((prev = {} as T) => {
+				const { [snapshot.key as keyof T]: _, ...newObj } = prev;
+				return newObj as T;
+			});
+		};
+
+		const pathRef = ref(db, path);
+		const unsubscribeAdded = onChildAdded(pathRef, handleChildChanged);
+		const unsubscribeChanged = onChildChanged(pathRef, handleChildChanged);
+		const unsubscribeRemoved = onChildRemoved(pathRef, handleChildRemoved);
+
+		// Cleanup listeners on unmount
+		return () => {
+			unsubscribeAdded();
+			unsubscribeChanged();
+			unsubscribeRemoved();
+		};
+	}, [path]);
+
+	useEffect(() => {
+		console.log(object);
+	}, [object]);
 
 	function writeChanges(changes: Difference[]) {
 		changes.forEach((change: Difference) => {
