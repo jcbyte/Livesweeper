@@ -8,4 +8,4 @@ export const BOARD_SIZES: (BoardSizeData & { name: string })[] = [
 ];
 
 export const PLAYER_INACTIVE_TIME = 8 * 1000;
-export const GAME_INACTIVE_TIME = 1 * 60 * 60 * 1000;
+export const GAME_INACTIVE_TIME = 24 * 60 * 60 * 1000;

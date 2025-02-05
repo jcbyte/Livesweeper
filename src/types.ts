@@ -19,4 +19,5 @@ export interface GameData {
 	board: BoardData;
 	boardSize: BoardSizeData;
 	players: Record<string, PlayerData>;
+	lastModified: number;
 }

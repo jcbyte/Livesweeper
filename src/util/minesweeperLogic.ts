@@ -45,7 +45,13 @@ function generateBoard(boardSize: BoardSizeData): BoardData {
 }
 
 export function generateGame(boardSize: BoardSizeData): GameData {
-	return { state: "play", board: generateBoard(boardSize), boardSize: boardSize, players: {} };
+	return {
+		state: "play",
+		board: generateBoard(boardSize),
+		boardSize: boardSize,
+		players: {},
+		lastModified: Date.now(),
+	};
 }
 
 function loseGame(game: GameData) {

@@ -109,6 +109,7 @@ function ActualGamePage({
 									setGame((prev) => {
 										let newGame = structuredClone(prev);
 										revealCell(newGame, row, col);
+										newGame.lastModified = Date.now();
 										return newGame;
 									});
 								}
@@ -122,6 +123,7 @@ function ActualGamePage({
 									setGame((prev) => {
 										let newGame = structuredClone(prev);
 										newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
+										newGame.lastModified = Date.now();
 										return newGame;
 									});
 								}

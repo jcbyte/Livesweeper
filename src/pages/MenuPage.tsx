@@ -4,16 +4,10 @@ import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
-import { createGame, doesGameExist } from "../firebase/db";
-import { BoardSizeData, GameData } from "../types";
+import { cleanupGames, createGame, doesGameExist } from "../firebase/db";
+import { BOARD_SIZES } from "../globals";
+import { GameData } from "../types";
 import { generateGame } from "../util/minesweeperLogic";
-
-const BOARD_SIZES: (BoardSizeData & { name: string })[] = [
-	{ name: "S", rows: 9, cols: 9, bombs: 10 },
-	{ name: "M", rows: 16, cols: 16, bombs: 40 },
-	{ name: "L", rows: 30, cols: 16, bombs: 99 },
-	{ name: "XL", rows: 30, cols: 20, bombs: 150 },
-];
 
 export default function MenuPage() {
 	const [inputCode, setInputCode] = useState<string>("");
@@ -41,6 +35,13 @@ export default function MenuPage() {
 	return (
 		<div className="flex justify-center items-center h-full">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
+				<div
+					className="w-8 h-8 bg-red-500"
+					onClick={() => {
+						cleanupGames();
+					}}
+				/>
+
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>

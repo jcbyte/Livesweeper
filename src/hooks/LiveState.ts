@@ -40,6 +40,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		};
 	}, [path]);
 
+	// todo perform all updates at once
 	function writeChanges(changes: Difference[]) {
 		changes.forEach((change: Difference) => {
 			let changePath = `${path}/${change.path.slice(1).join("/")}`;

@@ -1,5 +1,5 @@
 import { DataSnapshot, get, push, ref, remove, set } from "firebase/database";
-import { PLAYER_INACTIVE_TIME } from "../globals";
+import { GAME_INACTIVE_TIME, PLAYER_INACTIVE_TIME } from "../globals";
 import { GameData, PlayerData } from "../types";
 import { db } from "./firebase";
 
@@ -73,5 +73,33 @@ export async function cleanupPlayers(code: string): Promise<void> {
 }
 
 export async function cleanupGames(): Promise<void> {
-	// todo
+	let gamesListSnapshot = await get(ref(db, CODE_LIST_PATH));
+	let gamesListObject: Record<string, string> = gamesListSnapshot.exists() ? gamesListSnapshot.val() : {};
+	let gamesSnapshot = await get(ref(db, GAMES_PATH));
+	let gamesObject: Record<string, GameData> = gamesSnapshot.exists() ? gamesSnapshot.val() : {};
+
+	// Games in code list without game data
+	Object.entries(gamesListObject)
+		.filter(([codeKey, code]) => !Object.keys(gamesObject).includes(code))
+		.forEach(([codeKey, code]) => {
+			remove(ref(db, `${CODE_LIST_PATH}/${codeKey}`));
+		});
+
+	// Games with data not in code list
+	Object.keys(gamesObject)
+		.filter((code) => !Object.values(gamesListObject).includes(code))
+		.forEach((code) => {
+			remove(ref(db, getGamePath(code)));
+		});
+
+	// Games in code list and data which have expired
+	let now = Date.now();
+	Object.entries(gamesListObject)
+		.filter(([codeKey, code]) => Object.keys(gamesObject).includes(code))
+		.forEach(([codeKey, code]) => {
+			if (gamesObject[code].lastModified + GAME_INACTIVE_TIME < now) {
+				remove(ref(db, `${CODE_LIST_PATH}/${codeKey}`));
+				remove(ref(db, getGamePath(code)));
+			}
+		});
 }
