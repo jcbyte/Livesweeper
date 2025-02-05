@@ -10,14 +10,15 @@ import { useLiveState } from "../hooks/LiveState";
 import { GameData } from "../types";
 import { revealCell } from "../util/minesweeperLogic";
 
-export function GamePage() {
-	const { code } = useParams();
-	const navigate = useNavigate();
-
-	const [game, setGame] = useLiveState<GameData>(getGamePath(code ?? ""));
-
-	// todo wait for game to load?
-
+function ActualGamePage({
+	code,
+	game,
+	setGame,
+}: {
+	code: string;
+	game: GameData;
+	setGame: (newObject: GameData) => void;
+}) {
 	// todo show nicer
 	// todo live users position
 
@@ -31,7 +32,6 @@ export function GamePage() {
 					<Snippet symbol="">{code}</Snippet>
 				</div>
 
-				{/* use gameLoaded here to show skeleton board? */}
 				<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg">
 					{game && (
 						<Board
@@ -54,25 +54,57 @@ export function GamePage() {
 	);
 }
 
-export default function GamePageLoader() {
-	const { code } = useParams();
+function GameLoadingPage({ description }: { description: string }) {
+	return (
+		<div className="flex flex-col justify-center items-center h-full">
+			<h1 className="text-6xl font-bold text-center text-pink-200 mb-1">Livesweeper</h1>
+			<p className="text-2xl text-center text-pink-200 mb-8">{description}</p>
+			<Spinner color="secondary" size="lg" />
+		</div>
+	);
+}
+
+function GameLoader({ code }: { code: string }) {
+	const [game, setGame] = useLiveState<GameData>(getGamePath(code));
+
+	return (
+		<>
+			{game ? (
+				<ActualGamePage code={code} game={game} setGame={setGame} />
+			) : (
+				<GameLoadingPage description={`Loading Game ${code}`} />
+			)}
+		</>
+	);
+}
+
+function GameValidator({ code }: { code?: string }) {
 	const navigate = useNavigate();
 	const alert = useAlert();
 
-	const [gameLoaded, setGameLoaded] = useState<boolean>(false);
+	const [gameExists, setGameExists] = useState<boolean>(false);
 
 	async function checkGameExists() {
 		if (!code || !(await doesGameExist(code))) {
 			navigate("/");
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
 		} else {
-			setGameLoaded(true);
+			setGameExists(true);
 		}
 	}
 
 	useEffect(() => {
 		checkGameExists();
 	}, []);
+
+	return (
+		<>{gameExists ? <GameLoader code={code!} /> : <GameLoadingPage description={`Verifying Game ${code} Exists`} />}</>
+	);
+}
+
+export default function GamePage() {
+	const { code } = useParams();
+	const navigate = useNavigate();
 
 	return (
 		<>
@@ -87,17 +119,7 @@ export default function GamePageLoader() {
 				Home
 			</Button>
 
-			{gameLoaded ? (
-				<GamePage />
-			) : (
-				<>
-					<div className="flex flex-col justify-center items-center h-full">
-						<h1 className="text-6xl font-bold text-center text-pink-200 mb-1">Livesweeper</h1>
-						<p className="text-2xl text-center text-pink-200 mb-8">Loading Game {code}</p>
-						<Spinner color="secondary" size="lg" />
-					</div>
-				</>
-			)}
+			<GameValidator code={code} />
 		</>
 	);
 }

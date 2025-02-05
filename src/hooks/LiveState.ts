@@ -1,4 +1,4 @@
-import { DataSnapshot, get, onChildAdded, onChildChanged, onChildRemoved, ref, remove, set } from "firebase/database";
+import { DataSnapshot, onChildAdded, onChildChanged, onChildRemoved, ref, remove, set } from "firebase/database";
 import diff, { Difference } from "microdiff";
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
@@ -6,16 +6,15 @@ import { db } from "../firebase/firebase";
 export function useLiveState<T>(path: string): [T | undefined, (newObject: T) => void] {
 	const [object, setObject] = useState<T>();
 
-	async function syncLive() {
-		const snapshot: DataSnapshot = await get(ref(db, path));
-		if (snapshot.exists()) {
-			setObject(snapshot.val());
-		}
-	}
+	// async function syncLive() {
+	// 	const snapshot: DataSnapshot = await get(ref(db, path));
+	// 	if (snapshot.exists()) {
+	// 		setObject(snapshot.val());
+	// 	}
+	// }
 
 	useEffect(() => {
-		// Get initial data
-		syncLive();
+		// Get initial data via handleChildChanged running on each existing child
 
 		const handleChildChanged = (snapshot: DataSnapshot) => {
 			setObject((prev = {} as T) => ({ ...prev, [snapshot.key as keyof T]: snapshot.val() }));
