@@ -34,11 +34,16 @@ async function createCode(): Promise<string> {
 
 export async function createGame(game: GameData): Promise<string> {
 	let code: string = await createCode();
-	const gamesRef = ref(db, CODE_LIST_PATH);
 
+	const gamesRef = ref(db, CODE_LIST_PATH);
 	await push(gamesRef, code);
-	const thisGameRef = ref(db, `${GAMES_PATH}/${code}`);
+
+	const thisGameRef = ref(db, getGamePath(code));
 	set(thisGameRef, game);
 
 	return code;
+}
+
+export function getGamePath(code: string) {
+	return `${GAMES_PATH}/${code}`;
 }

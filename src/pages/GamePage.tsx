@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
-import { doesGameExist } from "../firebase/db";
+import { doesGameExist, getGamePath } from "../firebase/db";
+import { useLiveState } from "../hooks/LiveState";
 import { GameData } from "../types";
-import { generateBoard, revealCell } from "../util/minesweeperLogic";
+import { revealCell } from "../util/minesweeperLogic";
 
 export default function GamePage() {
 	const { code } = useParams();
 
-	const [game, setGame] = useState<GameData>({ board: generateBoard(10, 10, 10) });
+	const [game, setGame] = useLiveState<GameData>(getGamePath(code ?? ""));
 
 	const navigate = useNavigate();
 	const alert = useAlert();
@@ -62,18 +63,14 @@ export default function GamePage() {
 						<Board
 							board={game.board}
 							onCellClick={(row: number, col: number) => {
-								setGame((prevGame: GameData) => {
-									let newGame = structuredClone(prevGame);
-									revealCell(newGame.board, row, col);
-									return newGame;
-								});
+								let newGame = structuredClone(game);
+								revealCell(newGame.board, row, col);
+								setGame(newGame);
 							}}
 							onCellRightClick={(row: number, col: number) => {
-								setGame((prevGame: GameData) => {
-									let newGame = structuredClone(prevGame);
-									newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
-									return newGame;
-								});
+								let newGame = structuredClone(game);
+								newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
+								setGame(newGame);
 							}}
 						/>
 					)}
