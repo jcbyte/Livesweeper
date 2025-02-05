@@ -1,14 +1,17 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
 import { Spinner } from "@heroui/spinner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import { doesGameExist, getGamePath, resetGame } from "../firebase/db";
 import { useLiveState } from "../hooks/LiveState";
-import { GameData } from "../types";
+import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
+
+const INACTIVE_TIME = 10000;
 
 function ActualGamePage({
 	code,
@@ -20,10 +23,63 @@ function ActualGamePage({
 	setGame: (newObject: GameData) => void;
 }) {
 	const [restartingGame, setRestartingGame] = useState<boolean>(false);
+	const playerUuidRef = useRef<string>(uuidv4());
+	const boardRef = useRef<HTMLDivElement>(null);
+	const lastUpdateRef = useRef<number>(0);
 
 	// todo live users position
 	// todo delete old games
 	// todo animations
+
+	function updatePlayerData(newData: Partial<PlayerData> = {}) {
+		let now: number = Date.now();
+
+		let newGame: GameData = structuredClone(game);
+
+		if (!newGame.players) {
+			newGame.players = {};
+		}
+		if (!(playerUuidRef.current in newGame.players)) {
+			newGame.players[playerUuidRef.current] = { x: 0, y: 0, lastActive: 0 };
+		}
+
+		newGame.players[playerUuidRef.current] = { ...newGame.players[playerUuidRef.current], ...newData, lastActive: now };
+		setGame(newGame);
+
+		lastUpdateRef.current = now;
+	}
+
+	function playerKeepAlive() {
+		// No need to update if it was updated more recently
+		if (lastUpdateRef.current + INACTIVE_TIME / 2 < Date.now()) {
+			updatePlayerData();
+		}
+	}
+
+	function handleMouseMove(event: MouseEvent) {
+		if (!boardRef.current) return;
+		let rect: DOMRect = boardRef.current.getBoundingClientRect();
+
+		const mouseX: number = (event.clientX - rect.left) / rect.width;
+		const mouseY: number = (event.clientY - rect.top) / rect.height;
+
+		if (mouseX >= 0 && mouseX <= 1 && mouseY >= 0 && mouseY <= 1) {
+			updatePlayerData({ x: mouseX, y: mouseY });
+		}
+	}
+
+	useEffect(() => {
+		const keepAliveIntervalId = setInterval(() => {
+			playerKeepAlive();
+		}, INACTIVE_TIME / 10);
+
+		document.addEventListener("mousemove", handleMouseMove);
+
+		return () => {
+			clearInterval(keepAliveIntervalId);
+			document.removeEventListener("mousemove", handleMouseMove);
+		};
+	}, []);
 
 	return (
 		<>
@@ -36,7 +92,7 @@ function ActualGamePage({
 				</div>
 
 				<div className="max-w-[1024px] w-full px-8">
-					<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg w-full">
+					<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg w-full" ref={boardRef}>
 						<Board
 							game={game}
 							onCellClick={(row: number, col: number) => {
