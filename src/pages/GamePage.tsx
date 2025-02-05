@@ -1,5 +1,6 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
+import { Spinner } from "@heroui/spinner";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAlert } from "../components/Alert";
@@ -15,22 +16,13 @@ export function GamePage() {
 
 	const [game, setGame] = useLiveState<GameData>(getGamePath(code ?? ""));
 
+	// todo wait for game to load?
+
 	// todo show nicer
 	// todo live users position
 
 	return (
 		<>
-			<Button
-				className="fixed top-4 left-4"
-				color="secondary"
-				variant="bordered"
-				onPress={() => {
-					navigate("/");
-				}}
-			>
-				Back
-			</Button>
-
 			<div className="flex flex-col items-center h-full pt-12">
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-2">Livesweeper</h1>
 
@@ -82,7 +74,30 @@ export default function GamePageLoader() {
 		checkGameExists();
 	}, []);
 
-	// todo display loading
+	return (
+		<>
+			<Button
+				className="fixed top-4 left-4"
+				color="secondary"
+				variant="bordered"
+				onPress={() => {
+					navigate("/");
+				}}
+			>
+				Home
+			</Button>
 
-	return <>{gameLoaded && <GamePage />}</>;
+			{gameLoaded ? (
+				<GamePage />
+			) : (
+				<>
+					<div className="flex flex-col justify-center items-center h-full">
+						<h1 className="text-6xl font-bold text-center text-pink-200 mb-1">Livesweeper</h1>
+						<p className="text-2xl text-center text-pink-200 mb-8">Loading Game {code}</p>
+						<Spinner color="secondary" size="lg" />
+					</div>
+				</>
+			)}
+		</>
+	);
 }

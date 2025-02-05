@@ -41,10 +41,6 @@ export function useLiveState<T>(path: string): [T | undefined, (newObject: T) =>
 		};
 	}, [path]);
 
-	useEffect(() => {
-		console.log(object);
-	}, [object]);
-
 	function writeChanges(changes: Difference[]) {
 		changes.forEach((change: Difference) => {
 			let changePath = `${path}/${change.path.slice(1).join("/")}`;
