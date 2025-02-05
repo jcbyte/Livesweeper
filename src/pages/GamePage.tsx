@@ -9,32 +9,14 @@ import { useLiveState } from "../hooks/LiveState";
 import { GameData } from "../types";
 import { revealCell } from "../util/minesweeperLogic";
 
-export default function GamePage() {
+export function GamePage() {
 	const { code } = useParams();
+	const navigate = useNavigate();
 
 	const [game, setGame] = useLiveState<GameData>(getGamePath(code ?? ""));
 
-	const navigate = useNavigate();
-	const alert = useAlert();
-
 	// todo show nicer
-	// todo use actual data
-	// todo live data
 	// todo live users position
-
-	const [gameLoaded, setGameLoaded] = useState<boolean>(false);
-	useEffect(() => {
-		const checkGameExists = async () => {
-			if (!code || !(await doesGameExist(code))) {
-				navigate("/");
-				alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
-			} else {
-				setGameLoaded(true);
-			}
-		};
-
-		checkGameExists();
-	}, []);
 
 	return (
 		<>
@@ -78,4 +60,27 @@ export default function GamePage() {
 			</div>
 		</>
 	);
+}
+
+export default function GamePageLoader() {
+	const { code } = useParams();
+	const navigate = useNavigate();
+	const alert = useAlert();
+
+	const [gameLoaded, setGameLoaded] = useState<boolean>(false);
+
+	async function checkGameExists() {
+		if (!code || !(await doesGameExist(code))) {
+			navigate("/");
+			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
+		} else {
+			setGameLoaded(true);
+		}
+	}
+
+	useEffect(() => {
+		checkGameExists();
+	}, []);
+
+	return <>{gameLoaded && <GamePage />}</>;
 }
