@@ -91,6 +91,7 @@ export function revealCell(game: GameData, row: number, col: number, initialCall
 	}
 
 	game.board[row][col].revealed = true;
+	game.board[row][col].flagged = false;
 
 	if (game.board[row][col].value === 0) {
 		for (let i = -1; i <= 1; i++) {

@@ -33,6 +33,7 @@ function ActualGamePage({
 	// todo animations
 	// todo win/lose animations
 	// todo reduce mouse position sending
+	// todo error when restarting game ??? may be related to LiveState
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		const now: number = Date.now();

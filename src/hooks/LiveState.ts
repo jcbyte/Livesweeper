@@ -61,7 +61,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 				handleChildAdded(snapshot, path);
 			});
 			const removeListener = onChildRemoved(snapshot.ref, (snapshot: DataSnapshot) => {
-				handleChildRemoved(snapshot, path, pathKey);
+				handleChildRemoved(snapshot, path);
 			});
 
 			listenersRef.current[pathKey] = {
@@ -119,7 +119,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		});
 	}
 
-	function handleChildRemoved(snapshot: DataSnapshot, path: string[], pathKey: string) {
+	function handleChildRemoved(snapshot: DataSnapshot, path: string[]) {
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
 
