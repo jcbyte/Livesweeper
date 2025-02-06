@@ -24,6 +24,8 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	// 	}
 	// }
 
+	// todo test arrays
+
 	const pathItems = path.split("/").length - 1; // Note: Assumes path "/dir/dir"
 	function getPath(ref: DatabaseReference, path: string[] = []): string[] {
 		if (!ref.parent) return path.splice(pathItems);
@@ -38,115 +40,83 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	function createListeners(snapshot: DataSnapshot) {
 		if (!snapshot.exists()) return;
 
-		const path = `/${getPath(snapshot.ref).join("/")}`;
+		const path = getPath(snapshot.ref);
+		const pathKey = `/${path.join("/")}`;
 
 		// Only create listeners if they do not already exist
-		if (path in listenersRef.current) return;
+		if (pathKey in listenersRef.current) return;
 
 		if (snapshot.hasChildren()) {
 			// This is an object
 			const addListener = onChildAdded(snapshot.ref, (snapshot: DataSnapshot) => {
-				handleChildAdded(snapshot);
+				handleChildAdded(snapshot, path);
 			});
 			const removeListener = onChildRemoved(snapshot.ref, (snapshot: DataSnapshot) => {
-				handleChildRemoved(snapshot);
+				handleChildRemoved(snapshot, path, pathKey);
 			});
 
-			listenersRef.current[path] = {
+			listenersRef.current[pathKey] = {
 				primitive: false,
 				unsubscribeAdd: addListener,
 				unsubscribeRemove: removeListener,
 			};
-
-			// snapshot.forEach((childSnapshot) => {
-			// 	listener.object[childSnapshot.key ?? "/"] = { initialised: false };
-			// 	createListeners(childSnapshot, listener.object[childSnapshot.key ?? "/"], [...path, childSnapshot.key]);
-			// });
-
-			// listener = { primitive: false, unsubscribeAdd: addListener, unsubscribeRemove: removeListener, object: objects };
 		} else {
 			const changeListener = onValue(snapshot.ref, (snapshot: DataSnapshot) => {
-				handleValueChange(snapshot);
+				handleValueChange(snapshot, path);
 			});
-			listenersRef.current[path] = { primitive: true, unsubscribeUpdate: changeListener };
+			listenersRef.current[pathKey] = { primitive: true, unsubscribeUpdate: changeListener };
 		}
 	}
 
-	function handleValueChange(snapshot: DataSnapshot) {
+	function handleValueChange(snapshot: DataSnapshot, path: string[]) {
 		console.log("value changed", snapshot.ref.key, path);
 
-		// setObject((prev) => {
-		// 	const newObject = structuredClone(prev);
+		setObject((prev) => {
+			const newObject = structuredClone(prev);
 
-		// 	path.reduce((objectAt, key, index) => {
-		// 		if (index == path.length - 1) {
-		// 			objectAt[key] = snapshot.val();
-		// 		}
-		// 		return objectAt[key];
-		// 	}, newObject);
+			path.reduce((objectAt: any, key, index) => {
+				if (index == path.length - 1) {
+					objectAt[key] = snapshot.val();
+				}
+				return objectAt[key];
+			}, newObject);
 
-		// 	return newObject;
-		// });
+			return newObject;
+		});
 	}
 
-	function handleChildAdded(snapshot: DataSnapshot) {
+	function handleChildAdded(snapshot: DataSnapshot, path: string[]) {
 		console.log("value added", snapshot.ref.key);
 
-		// setObject((prev) => {
-		// 	const newObject = structuredClone(prev);
+		setObject((prev) => {
+			const newObject = structuredClone(prev);
 
-		// 	const [objectAtPath, listenersAtPath] = path.reduce(
-		// 		([objectAt, listenersAt], key) => {
-		// 			return [objectAt[key], listenersAt.object[key]];
-		// 		},
-		// 		[newObject, listenersRef.current]
-		// 	);
+			const objectAtPath = path.reduce((objectAt: any, key) => {
+				return objectAt[key];
+			}, newObject);
 
-		// 	objectAtPath[snapshot.key!] = snapshot.val();
-		// 	// 	listenersAtPath.object[snapshot.key!] = createListeners(snapshot, path);
-		// 	// Only create listeners if they do not already exist
+			objectAtPath[snapshot.key!] = snapshot.val();
+			createListeners(snapshot);
 
-		// 	return newObject;
-		// });
+			return newObject;
+		});
 	}
 
-	function handleChildRemoved(snapshot: DataSnapshot) {
+	function handleChildRemoved(snapshot: DataSnapshot, path: string[], pathKey: string) {
 		console.log("value removed", snapshot.ref.key);
 
-		// setObject((prev) => {
-		// 	const newObject = structuredClone(prev);
+		setObject((prev) => {
+			const newObject = structuredClone(prev);
 
-		// 	const [objectAtPath, listenersAtPath] = path.reduce(
-		// 		([objectAt, listenersAt], key) => {
-		// 			return [
-		// 				objectAt && key in objectAt ? objectAt[key] : null,
-		// 				listenersAt && key in listenersAt.object ? listenersAt.object[key] : null,
-		// 			];
-		// 		},
-		// 		[newObject, listenersRef.current]
-		// 	);
+			const objectAtPath = path.reduce((objectAt: any, key) => {
+				return [objectAt[key]];
+			}, newObject);
 
-		// 	if (objectAtPath && snapshot.key! in objectAtPath) {
-		// 		delete objectAtPath[snapshot.key!];
-		// 	}
+			delete objectAtPath[snapshot.key!];
+			delete listenersRef.current[pathKey]; // todo doesn't seem to delete listeners for nested objects when parent is deleted
 
-		// 	function unsubscribeListeners(listeners: Listener) {
-		// 		if (listeners.primitive) {
-		// 			listeners.unsubscribeUpdate();
-		// 		} else {
-		// 			// This is called with all child components first and so does not require recursing through `.object`
-
-		// 			listeners.unsubscribeAdd();
-		// 			listeners.unsubscribeRemove();
-		// 		}
-		// 	}
-		// 	if (listenersAtPath && snapshot.key! in listenersAtPath.object) {
-		// 		unsubscribeListeners(listenersAtPath.object[snapshot.key!]);
-		// 		delete listenersAtPath.object[snapshot.key!];
-		// 	}
-
-		// 	return newObject;
-		// });
+			return newObject;
+		});
 	}
 
 	useEffect(() => {
@@ -154,30 +124,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	}, [object]);
 
 	useEffect(() => {
-		// // Get initial data via handleChildChanged running on each existing child
-
-		// const handleChildChanged = (snapshot: DataSnapshot) => {
-		// 	setObject((prev = {} as T) => ({ ...prev, [snapshot.key as keyof T]: snapshot.val() }));
-		// };
-
-		// const handleChildRemoved = (snapshot: DataSnapshot) => {
-		// 	setObject((prev = {} as T) => {
-		// 		const { [snapshot.key as keyof T]: _, ...newObj } = prev;
-		// 		return newObj as T;
-		// 	});
-		// };
-
-		// const pathRef = ref(db, path);
-		// const unsubscribeAdded = onChildAdded(pathRef, handleChildChanged);
-		// const unsubscribeChanged = onChildChanged(pathRef, handleChildChanged);
-		// const unsubscribeRemoved = onChildRemoved(pathRef, handleChildRemoved);
-
-		// // Cleanup listeners on unmount
-		// return () => {
-		// 	unsubscribeAdded();
-		// 	unsubscribeChanged();
-		// 	unsubscribeRemoved();
-		// };
+		// Get initial data via handleChildChanged running on each existing child
 
 		async function init() {
 			const snapshot: DataSnapshot = await get(ref(db, path));
