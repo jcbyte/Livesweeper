@@ -1,3 +1,5 @@
+export type CodeList = Record<string, string>;
+
 export interface CellData {
 	revealed: boolean;
 	flagged: boolean;
@@ -6,13 +8,17 @@ export interface CellData {
 
 export type BoardData = CellData[][];
 
-export type BoardSizeData = { rows: number; cols: number; bombs: number };
+export interface BoardSizeData {
+	rows: number;
+	cols: number;
+	bombs: number;
+}
 
-export type PlayerData = {
+export interface PlayerData {
 	x: number;
 	y: number;
 	lastActive: number;
-};
+}
 
 export interface GameData {
 	state: "play" | "lost" | "win";
@@ -20,4 +26,8 @@ export interface GameData {
 	boardSize: BoardSizeData;
 	players: Record<string, PlayerData>;
 	lastModified: number;
+}
+
+export interface MetaData {
+	lastCleanup: number;
 }

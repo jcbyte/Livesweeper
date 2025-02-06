@@ -1,10 +1,11 @@
 import { DataSnapshot, get, push, ref, remove, set } from "firebase/database";
 import { GAME_INACTIVE_TIME, PLAYER_INACTIVE_TIME } from "../globals";
-import { GameData, PlayerData } from "../types";
+import { CodeList, GameData, MetaData, PlayerData } from "../types";
 import { db } from "./firebase";
 
 const CODE_LIST_PATH = "/codes";
 const GAMES_PATH = "/games";
+const META_PATH = "/meta";
 
 async function listGameCodes(): Promise<string[]> {
 	const gamesSnapshot: DataSnapshot = await get(ref(db, CODE_LIST_PATH));
@@ -40,7 +41,9 @@ export async function createGame(game: GameData): Promise<string> {
 	await push(gamesRef, code);
 
 	const gameRef = ref(db, getGamePath(code));
-	set(gameRef, game);
+	await set(gameRef, game);
+
+	// todo perform all updates at once
 
 	return code;
 }
@@ -70,11 +73,21 @@ export async function cleanupPlayers(code: string): Promise<void> {
 			remove(ref(db, `${playersPath}/${key}`));
 		}
 	});
+
+	// todo perform all updates at once
 }
 
 export async function cleanupGames(): Promise<void> {
+	const metaSnapshot: DataSnapshot = await get(ref(db, META_PATH));
+	let metaData: MetaData = metaSnapshot.exists() ? metaSnapshot.val() : { lastCleanup: 0 };
+
+	let now = Date.now();
+	if (metaData.lastCleanup + GAME_INACTIVE_TIME / 2 >= now) {
+		return;
+	}
+
 	let gamesListSnapshot = await get(ref(db, CODE_LIST_PATH));
-	let gamesListObject: Record<string, string> = gamesListSnapshot.exists() ? gamesListSnapshot.val() : {};
+	let gamesListObject: CodeList = gamesListSnapshot.exists() ? gamesListSnapshot.val() : {};
 	let gamesSnapshot = await get(ref(db, GAMES_PATH));
 	let gamesObject: Record<string, GameData> = gamesSnapshot.exists() ? gamesSnapshot.val() : {};
 
@@ -93,7 +106,6 @@ export async function cleanupGames(): Promise<void> {
 		});
 
 	// Games in code list and data which have expired
-	let now = Date.now();
 	Object.entries(gamesListObject)
 		.filter(([codeKey, code]) => Object.keys(gamesObject).includes(code))
 		.forEach(([codeKey, code]) => {
@@ -102,4 +114,8 @@ export async function cleanupGames(): Promise<void> {
 				remove(ref(db, getGamePath(code)));
 			}
 		});
+
+	set(ref(db, `${META_PATH}/lastCleanup`), now);
+
+	// todo perform all updates at once
 }

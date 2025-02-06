@@ -1,10 +1,10 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
-import { cleanupGames, createGame, doesGameExist } from "../firebase/db";
+import { createGame, doesGameExist } from "../firebase/db";
 import { BOARD_SIZES } from "../globals";
 import { GameData } from "../types";
 import { generateGame } from "../util/minesweeperLogic";
@@ -31,10 +31,6 @@ export default function MenuPage() {
 	function joinGame(code: string) {
 		navigate(`/game/${code}`);
 	}
-
-	useEffect(() => {
-		cleanupGames();
-	}, []);
 
 	return (
 		<div className="flex justify-center items-center h-screen">

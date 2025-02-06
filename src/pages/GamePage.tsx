@@ -29,6 +29,7 @@ function ActualGamePage({
 	const lastUpdateRef = useRef<number>(0);
 
 	// todo animations
+	// todo reduce mouse position sending
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		let now: number = Date.now();
