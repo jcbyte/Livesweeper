@@ -20,12 +20,17 @@ export interface PlayerData {
 	lastActive: number;
 }
 
+export interface GameMetaData {
+	lastPlayerCleanup: number;
+}
+
 export interface GameData {
 	state: "play" | "lost" | "win";
 	board: BoardData;
 	boardSize: BoardSizeData;
 	players: Record<string, PlayerData>;
 	lastModified: number;
+	meta: GameMetaData;
 }
 
 export interface MetaData {

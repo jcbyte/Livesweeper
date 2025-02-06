@@ -1,6 +1,6 @@
 import { DataSnapshot, get, push, ref, remove, set } from "firebase/database";
-import { GAME_INACTIVE_TIME, PLAYER_INACTIVE_TIME } from "../globals";
-import { CodeList, GameData, MetaData, PlayerData } from "../types";
+import { GAME_INACTIVE_TIME, PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME } from "../globals";
+import { CodeList, GameData, PlayerData } from "../types";
 import { db } from "./firebase";
 
 const CODE_LIST_PATH = "/codes";
@@ -60,6 +60,15 @@ export function getGamePath(code: string) {
 }
 
 export async function cleanupPlayers(code: string): Promise<void> {
+	let lastPlayerCleanupPath = `${getGamePath(code)}/meta/lastPlayerCleanup`;
+	const lastPlayerCleanupSnapshot = await get(ref(db, lastPlayerCleanupPath));
+	let lastPlayerCleanup: number = lastPlayerCleanupSnapshot.exists() ? lastPlayerCleanupSnapshot.val() : 0;
+
+	let now = Date.now();
+	if (lastPlayerCleanup + PLAYER_CLEANUP_TIME >= now) {
+		return;
+	}
+
 	let playersPath = `${getGamePath(code)}/players`;
 	const playersSnapshot = await get(ref(db, playersPath));
 
@@ -67,22 +76,24 @@ export async function cleanupPlayers(code: string): Promise<void> {
 
 	let players: Record<string, PlayerData> = playersSnapshot.val();
 
-	let now = Date.now();
 	Object.entries(players).forEach(([key, player]) => {
 		if (player.lastActive + PLAYER_INACTIVE_TIME < now) {
 			remove(ref(db, `${playersPath}/${key}`));
 		}
 	});
 
+	set(ref(db, lastPlayerCleanupPath), now);
+
 	// todo perform all updates at once
 }
 
 export async function cleanupGames(): Promise<void> {
-	const metaSnapshot: DataSnapshot = await get(ref(db, META_PATH));
-	let metaData: MetaData = metaSnapshot.exists() ? metaSnapshot.val() : { lastCleanup: 0 };
+	let lastCleanupPath = `${META_PATH}/lastCleanup`;
+	const lastCleanupSnapshot = await get(ref(db, lastCleanupPath));
+	let lastCleanup: number = lastCleanupSnapshot.exists() ? lastCleanupSnapshot.val() : 0;
 
 	let now = Date.now();
-	if (metaData.lastCleanup + GAME_INACTIVE_TIME / 2 >= now) {
+	if (lastCleanup + GAME_INACTIVE_TIME / 2 >= now) {
 		return;
 	}
 
@@ -115,7 +126,7 @@ export async function cleanupGames(): Promise<void> {
 			}
 		});
 
-	set(ref(db, `${META_PATH}/lastCleanup`), now);
+	set(ref(db, lastCleanupPath), now);
 
 	// todo perform all updates at once
 }

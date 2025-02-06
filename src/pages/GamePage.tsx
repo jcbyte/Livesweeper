@@ -8,7 +8,7 @@ import Cursor from "../assets/Cursor";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../firebase/db";
-import { PLAYER_INACTIVE_TIME } from "../globals";
+import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
@@ -81,7 +81,7 @@ function ActualGamePage({
 		cleanupPlayers(code);
 		const cleanupPlayersIntervalId = setInterval(() => {
 			cleanupPlayers(code);
-		}, 30 * 1000);
+		}, PLAYER_CLEANUP_TIME);
 
 		document.addEventListener("mousemove", handleMouseMove);
 

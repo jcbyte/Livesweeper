@@ -9,3 +9,5 @@ export const BOARD_SIZES: { name: string; sizeData: BoardSizeData }[] = [
 
 export const PLAYER_INACTIVE_TIME = 8 * 1000;
 export const GAME_INACTIVE_TIME = 24 * 60 * 60 * 1000;
+
+export const PLAYER_CLEANUP_TIME = 1 * 60 * 1000;
