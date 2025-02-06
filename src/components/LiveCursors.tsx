@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import Cursor from "../assets/Cursor";
 import { PLAYER_INACTIVE_TIME } from "../globals";
 import { PlayerData } from "../types";
@@ -12,25 +13,24 @@ export default function LiveCursors({
 	players: Record<string, PlayerData>;
 	boardRef: HTMLDivElement | null;
 }) {
-	// todo animate cursor movement to make less "jumpy"
-
 	return (
 		<>
 			{players &&
 				Object.entries(players)
 					.filter(([key, player]) => key != yourUuid && player.lastActive + PLAYER_INACTIVE_TIME >= Date.now())
 					.map(([key, player]) => {
+						const targetX = player.x * (boardRef?.getBoundingClientRect().width ?? 0);
+						const targetY = player.y * (boardRef?.getBoundingClientRect().height ?? 0);
+
 						return (
-							<div
+							<motion.div
 								key={key}
 								className="absolute"
-								style={{
-									left: player.x * (boardRef?.getBoundingClientRect().width ?? 0),
-									top: player.y * (boardRef?.getBoundingClientRect().height ?? 0),
-								}}
+								animate={{ left: targetX, top: targetY }}
+								transition={{ type: "spring", stiffness: 100, damping: 20 }}
 							>
 								<Cursor colour={getRandomColor(key)} size={(boardRef?.getBoundingClientRect().width ?? 0) / 16} />
-							</div>
+							</motion.div>
 						);
 					})}
 		</>

@@ -9,7 +9,7 @@ import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import LiveCursors from "../components/LiveCursors";
 import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../firebase/db";
-import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME } from "../globals";
+import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
@@ -29,10 +29,10 @@ function ActualGamePage({
 	const playerUuidRef = useRef<string>(uuidv4());
 	const boardRef = useRef<HTMLDivElement>(null);
 	const lastUpdateRef = useRef<number>(0);
+	const lastPositionUpdateRef = useRef<number>(0);
 
 	// todo animations
 	// todo win/lose animations
-	// todo reduce mouse position sending
 	// todo error when restarting game ??? may be related to LiveState
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
@@ -60,13 +60,16 @@ function ActualGamePage({
 
 	function playerKeepAlive() {
 		// No need to update if it was updated more recently
-		if (lastUpdateRef.current + PLAYER_INACTIVE_TIME / 2 < Date.now()) {
-			updatePlayerData();
-		}
+		if (lastUpdateRef.current + PLAYER_INACTIVE_TIME / 2 >= Date.now()) return;
+
+		updatePlayerData();
 	}
 
 	function handleMouseMove(event: MouseEvent) {
+		const now = Date.now();
+		if (lastPositionUpdateRef.current + POSITION_UPDATE_INTERVAL >= now) return;
 		if (!boardRef.current) return;
+
 		const rect: DOMRect = boardRef.current.getBoundingClientRect();
 
 		const mouseX: number = (event.clientX - rect.left) / rect.width;
@@ -75,6 +78,8 @@ function ActualGamePage({
 		if (mouseX >= 0 && mouseX <= 1 && mouseY >= 0 && mouseY <= 1) {
 			updatePlayerData({ x: mouseX, y: mouseY });
 		}
+
+		lastPositionUpdateRef.current = now;
 	}
 
 	useEffect(() => {
