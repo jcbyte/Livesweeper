@@ -35,9 +35,13 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		return normalisePath(pathItems.join("/"));
 	}
 
-	const pathItems = normalisePath(path ?? "").split("/").length ?? 0 - 1; // Note: Assumes path "/dir/dir"
+	function getPathComponentCount(path: string): number {
+		const normalisedPath = normalisePath(path);
+		return normalisedPath === "/" ? 0 : normalisedPath.split("/").length - 1;
+	}
+	const pathItems = path ? getPathComponentCount(path) : 0;
 	function getRefPath(ref: DatabaseReference, path: string[] = []): string[] {
-		if (!ref.parent) return path.splice(pathItems);
+		if (!ref.parent) return path.slice(pathItems);
 
 		return getRefPath(ref.parent, [ref.key ?? "", ...path]);
 	}

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import Cursor from "../assets/Cursor";
 import { PLAYER_INACTIVE_TIME } from "../globals";
 import { PlayerData } from "../types";
-import { getRandomColor } from "../util/randomUtil";
+import { getRandomColor } from "../util/util";
 
 export default function LiveCursors({
 	yourUuid,

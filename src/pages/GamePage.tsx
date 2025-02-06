@@ -13,8 +13,7 @@ import { PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
-
-export const wait = (duration: number) => new Promise<void>((resolve) => setTimeout(resolve, duration));
+import { wait } from "../util/util";
 
 export default function GamePage() {
 	const { code } = useParams();
@@ -36,7 +35,7 @@ export default function GamePage() {
 			navigate("/");
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
 		} else {
-			await wait(3000);
+			wait(1000); // ? Can remove this to speed up loading
 			setGameExists(true);
 		}
 	}
@@ -44,7 +43,6 @@ export default function GamePage() {
 	// todo win/lose animations
 
 	// todo error when restarting game ??? may be related to LiveState
-	// todo board doesn't seem to update from live ??
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		const now: number = Date.now();

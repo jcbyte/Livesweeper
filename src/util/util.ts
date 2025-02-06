@@ -13,3 +13,5 @@ export function getRandomColor(seed: string): string {
 	// Return the color as a hex string
 	return `rgb(${r}, ${g}, ${b})`;
 }
+
+export const wait = (duration: number) => new Promise<void>((resolve) => setTimeout(resolve, duration));
