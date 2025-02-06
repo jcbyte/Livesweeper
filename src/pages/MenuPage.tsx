@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import { createGame, doesGameExist } from "../firebase/db";
 import { BOARD_SIZES } from "../globals";
+import { useLiveState } from "../hooks/LiveState";
 import { GameData } from "../types";
 import { generateGame } from "../util/minesweeperLogic";
 
@@ -34,6 +35,8 @@ export default function MenuPage() {
 		navigate(`/game/${code}`);
 	}
 
+	const [obj, setObj] = useLiveState("/games/826H4/players");
+
 	return (
 		<div className="flex justify-center items-center h-screen">
 			<motion.div
@@ -47,6 +50,7 @@ export default function MenuPage() {
 					damping: 12,
 				}}
 			>
+				<div className="w-10 h-10 bg-red-500" onClick={async () => {}} />
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>

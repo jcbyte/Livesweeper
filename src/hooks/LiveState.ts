@@ -1,10 +1,11 @@
-import { DataSnapshot, onChildAdded, onChildChanged, onChildRemoved, ref, update } from "firebase/database";
+import { DataSnapshot, get, onChildAdded, onChildRemoved, onValue, ref, Unsubscribe, update } from "firebase/database";
 import diff, { Difference } from "microdiff";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db } from "../firebase/firebase";
 
 export function useLiveState<T>(path: string): [T | undefined, (updater: (newObject: T) => T) => void] {
-	const [object, setObject] = useState<T>();
+	const [object, setObject] = useState<T | undefined>(undefined);
+	const listenersRef = useRef<ListenersObj | null>(null);
 
 	// async function syncLive() {
 	// 	const snapshot: DataSnapshot = await get(ref(db, path));
@@ -13,31 +14,111 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	// 	}
 	// }
 
-	useEffect(() => {
-		// Get initial data via handleChildChanged running on each existing child
+	type ListenersObj =
+		| { update: Unsubscribe }
+		| { add: Unsubscribe; remove: Unsubscribe; object: Record<string, ListenersObj> };
+	function createListeners(snapshot: DataSnapshot, path: any[] = []): ListenersObj {
+		if (!snapshot.exists()) {
+			throw "Data does not exist!";
+		}
 
-		const handleChildChanged = (snapshot: DataSnapshot) => {
-			setObject((prev = {} as T) => ({ ...prev, [snapshot.key as keyof T]: snapshot.val() }));
-		};
+		if (snapshot.hasChildren()) {
+			let a: Record<string, ListenersObj> = {};
 
-		const handleChildRemoved = (snapshot: DataSnapshot) => {
-			setObject((prev = {} as T) => {
-				const { [snapshot.key as keyof T]: _, ...newObj } = prev;
-				return newObj as T;
+			snapshot.forEach((childSnapshot) => {
+				a[childSnapshot.key ?? "/"] = createListeners(childSnapshot, [...path, childSnapshot.key]);
 			});
-		};
 
-		const pathRef = ref(db, path);
-		const unsubscribeAdded = onChildAdded(pathRef, handleChildChanged);
-		const unsubscribeChanged = onChildChanged(pathRef, handleChildChanged);
-		const unsubscribeRemoved = onChildRemoved(pathRef, handleChildRemoved);
+			const addListener = onChildAdded(snapshot.ref, (snapshot: DataSnapshot) => {
+				handleChildAdded(snapshot, path);
+			});
+			const removeListener = onChildRemoved(snapshot.ref, handleChildRemoved);
 
-		// Cleanup listeners on unmount
-		return () => {
-			unsubscribeAdded();
-			unsubscribeChanged();
-			unsubscribeRemoved();
-		};
+			return { add: addListener, remove: removeListener, object: a };
+		} else {
+			const changeListener = onValue(snapshot.ref, (snapshot: DataSnapshot) => {
+				handleValueChange(snapshot, path);
+			});
+
+			return { update: changeListener };
+		}
+	}
+
+	function handleValueChange(snapshot: DataSnapshot, path: any[]) {
+		setObject((prev) => {
+			if (!prev) return prev;
+
+			const newObject = structuredClone(prev);
+
+			path.reduce((objectAt, key, index) => {
+				if (index == path.length - 1) {
+					objectAt[key] = snapshot.val();
+				}
+				return objectAt[key];
+			}, newObject);
+
+			return newObject;
+		});
+	}
+
+	function handleChildAdded(snapshot: DataSnapshot, path: any[]) {
+		// setObject((prev) => {
+		// 	if (!prev) return prev;
+		// 	const newObject = structuredClone(prev);
+		// 	const [objectAtPath, listenersAtPath] = path.reduce(
+		// 		([objectAt, listenersAt], key) => {
+		// 			return [objectAt[key], listenersAt.object[key]];
+		// 		},
+		// 		[newObject, listenersRef.current]
+		// 	);
+		// 	// objectAtPath[snapshot.key!] = snapshot.val();
+		// 	listenersAtPath.object[snapshot.key!] = createListeners(snapshot, path);
+		// 	return newObject;
+		// });
+	}
+
+	function handleChildRemoved(snapshot: DataSnapshot) {
+		// console.log("value removed", snapshot.ref.key);
+	}
+
+	useEffect(() => {
+		console.log(object, listenersRef.current);
+	}, [object]);
+
+	useEffect(() => {
+		// // Get initial data via handleChildChanged running on each existing child
+
+		// const handleChildChanged = (snapshot: DataSnapshot) => {
+		// 	setObject((prev = {} as T) => ({ ...prev, [snapshot.key as keyof T]: snapshot.val() }));
+		// };
+
+		// const handleChildRemoved = (snapshot: DataSnapshot) => {
+		// 	setObject((prev = {} as T) => {
+		// 		const { [snapshot.key as keyof T]: _, ...newObj } = prev;
+		// 		return newObj as T;
+		// 	});
+		// };
+
+		// const pathRef = ref(db, path);
+		// const unsubscribeAdded = onChildAdded(pathRef, handleChildChanged);
+		// const unsubscribeChanged = onChildChanged(pathRef, handleChildChanged);
+		// const unsubscribeRemoved = onChildRemoved(pathRef, handleChildRemoved);
+
+		// // Cleanup listeners on unmount
+		// return () => {
+		// 	unsubscribeAdded();
+		// 	unsubscribeChanged();
+		// 	unsubscribeRemoved();
+		// };
+
+		async function init() {
+			const snapshot: DataSnapshot = await get(ref(db, path));
+			if (snapshot.exists()) {
+				listenersRef.current = createListeners(snapshot);
+				setObject(snapshot.val());
+			}
+		}
+		init();
 	}, [path]);
 
 	function writeChanges(changes: Difference[]) {
