@@ -32,7 +32,9 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 			const addListener = onChildAdded(snapshot.ref, (snapshot: DataSnapshot) => {
 				handleChildAdded(snapshot, path);
 			});
-			const removeListener = onChildRemoved(snapshot.ref, handleChildRemoved);
+			const removeListener = onChildRemoved(snapshot.ref, (snapshot: DataSnapshot) => {
+				handleChildRemoved(snapshot, path);
+			});
 
 			return { add: addListener, remove: removeListener, object: a };
 		} else {
@@ -46,8 +48,6 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 
 	function handleValueChange(snapshot: DataSnapshot, path: any[]) {
 		setObject((prev) => {
-			if (!prev) return prev;
-
 			const newObject = structuredClone(prev);
 
 			path.reduce((objectAt, key, index) => {
@@ -62,23 +62,43 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	}
 
 	function handleChildAdded(snapshot: DataSnapshot, path: any[]) {
-		// setObject((prev) => {
-		// 	if (!prev) return prev;
-		// 	const newObject = structuredClone(prev);
-		// 	const [objectAtPath, listenersAtPath] = path.reduce(
-		// 		([objectAt, listenersAt], key) => {
-		// 			return [objectAt[key], listenersAt.object[key]];
-		// 		},
-		// 		[newObject, listenersRef.current]
-		// 	);
-		// 	// objectAtPath[snapshot.key!] = snapshot.val();
-		// 	listenersAtPath.object[snapshot.key!] = createListeners(snapshot, path);
-		// 	return newObject;
-		// });
+		// console.log("value added", snapshot.ref.key, path);
+
+		setObject((prev) => {
+			const newObject = structuredClone(prev);
+
+			const [objectAtPath, listenersAtPath] = path.reduce(
+				([objectAt, listenersAt], key) => {
+					return [objectAt[key], listenersAt.object[key]];
+				},
+				[newObject, listenersRef.current]
+			);
+
+			objectAtPath[snapshot.key!] = snapshot.val();
+			// 	listenersAtPath.object[snapshot.key!] = createListeners(snapshot, path); // todo need to fix this
+
+			return newObject;
+		});
 	}
 
-	function handleChildRemoved(snapshot: DataSnapshot) {
-		// console.log("value removed", snapshot.ref.key);
+	function handleChildRemoved(snapshot: DataSnapshot, path: any[]) {
+		console.log("value removed", snapshot.ref.key, path);
+
+		setObject((prev) => {
+			const newObject = structuredClone(prev);
+
+			const [objectAtPath, listenersAtPath] = path.reduce(
+				([objectAt, listenersAt], key) => {
+					return [objectAt[key], listenersAt.object[key]];
+				},
+				[newObject, listenersRef.current]
+			);
+
+			delete objectAtPath[snapshot.key!];
+			// 	listenersAtPath.object[snapshot.key!]; // todo need to fix this
+
+			return newObject;
+		});
 	}
 
 	useEffect(() => {
@@ -114,8 +134,8 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		async function init() {
 			const snapshot: DataSnapshot = await get(ref(db, path));
 			if (snapshot.exists()) {
-				listenersRef.current = createListeners(snapshot);
 				setObject(snapshot.val());
+				listenersRef.current = createListeners(snapshot);
 			}
 		}
 		init();
