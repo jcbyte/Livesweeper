@@ -153,7 +153,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	function writeChanges(changes: Difference[]) {
 		const updates: Record<string, any> = {};
 
-		changes.forEach((change: Difference) => {
+		changes.forEach((change) => {
 			const changePath = `${path}${getPath(change.path.slice(1))}`;
 
 			if (change.type === "CREATE" || change.type === "CHANGE") {
@@ -168,8 +168,8 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 
 	function updateObject(updater: (newObject: T) => T) {
 		setObject((prev) => {
-			const newObject: T = updater(prev as T);
-			const changes: Difference[] = diff([object], [newObject]);
+			const newObject = updater(prev as T);
+			const changes = diff([object], [newObject]);
 			writeChanges(changes);
 			return newObject;
 		});

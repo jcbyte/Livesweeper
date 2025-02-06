@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import { createGame, doesGameExist } from "../firebase/db";
 import { BOARD_SIZES } from "../globals";
-import { useLiveState } from "../hooks/LiveState";
 import { GameData } from "../types";
 import { generateGame } from "../util/minesweeperLogic";
 
@@ -34,8 +33,6 @@ export default function MenuPage() {
 	function joinGame(code: string) {
 		navigate(`/game/${code}`);
 	}
-
-	const [obj, setObj] = useLiveState("/games/826H4/players");
 
 	return (
 		<div className="flex justify-center items-center h-screen">
