@@ -70,7 +70,7 @@ export async function cleanupPlayers(code: string): Promise<void> {
 	const playersPath = `${getGamePath(code)}/players`;
 	const playersSnapshot = await get(ref(db, playersPath));
 
-	if (!playersSnapshot.exists) return;
+	if (!playersSnapshot.exists()) return;
 
 	const players: Record<string, PlayerData> = playersSnapshot.val();
 

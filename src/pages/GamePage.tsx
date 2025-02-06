@@ -8,8 +8,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import LiveCursors from "../components/LiveCursors";
-import { doesGameExist, getGamePath, resetGame } from "../firebase/db";
-import { PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } from "../globals";
+import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../firebase/db";
+import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
@@ -30,25 +30,28 @@ export default function GamePage() {
 
 	const [game, setGame] = useLiveState<GameData>(gameExists ? getGamePath(code!) : null);
 
-	async function checkGameExists() {
+	async function checkGameExists(): Promise<boolean> {
 		if (!code || !(await doesGameExist(code))) {
 			navigate("/");
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
+			return false;
 		} else {
 			wait(1000); // ? Can remove this to speed up loading
 			setGameExists(true);
+			return true;
 		}
 	}
 
 	// todo win/lose animations
 
-	// todo error when restarting game ??? may be related to LiveState
+	// todo weird bug that data set from updatePlayerData is sent to "/null"
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		const now: number = Date.now();
 
 		setGame((prev) => {
 			const newGame: GameData = structuredClone(prev);
+
 			if (!newGame.players) {
 				newGame.players = {};
 			}
@@ -92,26 +95,30 @@ export default function GamePage() {
 	}
 
 	useEffect(() => {
-		checkGameExists();
+		let keepAliveIntervalId: NodeJS.Timeout;
+		let cleanupPlayersIntervalId: NodeJS.Timeout;
 
-		// todo should only do below if above returns
+		async function init() {
+			if (!(await checkGameExists())) return;
 
-		// const keepAliveIntervalId = setInterval(() => {
-		// 	playerKeepAlive();
-		// }, PLAYER_INACTIVE_TIME / 10);
+			// keepAliveIntervalId = setInterval(() => {
+			// 	playerKeepAlive();
+			// }, PLAYER_INACTIVE_TIME / 10);
 
-		// cleanupPlayers(code);
-		// const cleanupPlayersIntervalId = setInterval(() => {
-		// 	cleanupPlayers(code);
-		// }, PLAYER_CLEANUP_TIME);
+			cleanupPlayers(code!);
+			cleanupPlayersIntervalId = setInterval(() => {
+				cleanupPlayers(code!);
+			}, PLAYER_CLEANUP_TIME);
 
-		// document.addEventListener("mousemove", handleMouseMove);
+			// document.addEventListener("mousemove", handleMouseMove);
+		}
+		init();
 
-		// return () => {
-		// 	clearInterval(keepAliveIntervalId);
-		// 	clearInterval(cleanupPlayersIntervalId);
-		// 	document.removeEventListener("mousemove", handleMouseMove);
-		// };
+		return () => {
+			// clearInterval(keepAliveIntervalId);
+			clearInterval(cleanupPlayersIntervalId);
+			// document.removeEventListener("mousemove", handleMouseMove);
+		};
 	}, []);
 
 	return (
