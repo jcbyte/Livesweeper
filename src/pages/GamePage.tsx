@@ -32,10 +32,10 @@ function ActualGamePage({
 	// todo reduce mouse position sending
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
-		let now: number = Date.now();
+		const now: number = Date.now();
 
 		setGame((prev) => {
-			let newGame: GameData = structuredClone(prev);
+			const newGame: GameData = structuredClone(prev);
 			if (!newGame.players) {
 				newGame.players = {};
 			}
@@ -63,7 +63,7 @@ function ActualGamePage({
 
 	function handleMouseMove(event: MouseEvent) {
 		if (!boardRef.current) return;
-		let rect: DOMRect = boardRef.current.getBoundingClientRect();
+		const rect: DOMRect = boardRef.current.getBoundingClientRect();
 
 		const mouseX: number = (event.clientX - rect.left) / rect.width;
 		const mouseY: number = (event.clientY - rect.top) / rect.height;
@@ -126,7 +126,7 @@ function ActualGamePage({
 
 								if (!game.board[row][col].flagged && !game.board[row][col].revealed) {
 									setGame((prev) => {
-										let newGame = structuredClone(prev);
+										const newGame = structuredClone(prev);
 										revealCell(newGame, row, col);
 										newGame.lastModified = Date.now();
 										return newGame;
@@ -140,7 +140,7 @@ function ActualGamePage({
 
 								if (!game.board[row][col].revealed) {
 									setGame((prev) => {
-										let newGame = structuredClone(prev);
+										const newGame = structuredClone(prev);
 										newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
 										newGame.lastModified = Date.now();
 										return newGame;

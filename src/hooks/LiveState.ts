@@ -43,7 +43,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	// todo perform all updates at once
 	function writeChanges(changes: Difference[]) {
 		changes.forEach((change: Difference) => {
-			let changePath = `${path}/${change.path.slice(1).join("/")}`;
+			const changePath = `${path}/${change.path.slice(1).join("/")}`;
 			const dbRef = ref(db, changePath);
 
 			if (change.type === "CREATE" || change.type === "CHANGE") {
@@ -56,7 +56,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 
 	function updateObject(updater: (newObject: T) => T) {
 		setObject((prev) => {
-			let newObject: T = updater(prev as T);
+			const newObject: T = updater(prev as T);
 			const changes: Difference[] = diff([object], [newObject]);
 			writeChanges(changes);
 			return newObject;

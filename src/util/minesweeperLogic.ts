@@ -1,7 +1,7 @@
 import { BoardData, BoardSizeData, CellData, GameData } from "../types";
 
 function generateBoard(boardSize: BoardSizeData): BoardData {
-	let bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
+	const bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
 
 	const board: BoardData = Array(boardSize.rows)
 		.fill(null)
@@ -45,12 +45,15 @@ function generateBoard(boardSize: BoardSizeData): BoardData {
 }
 
 export function generateGame(boardSize: BoardSizeData): GameData {
+	const now = Date.now();
+
 	return {
 		state: "play",
 		board: generateBoard(boardSize),
 		boardSize: boardSize,
 		players: {},
-		lastModified: Date.now(),
+		lastModified: now,
+		meta: { lastPlayerCleanup: now },
 	};
 }
 

@@ -18,13 +18,13 @@ async function listGameCodes(): Promise<string[]> {
 }
 
 export async function doesGameExist(code: string): Promise<boolean> {
-	let gameCodes = await listGameCodes();
+	const gameCodes = await listGameCodes();
 	return gameCodes.includes(code);
 }
 
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 async function createCode(): Promise<string> {
-	let gameCodes = await listGameCodes();
+	const gameCodes = await listGameCodes();
 
 	let code: string;
 	do {
@@ -35,7 +35,7 @@ async function createCode(): Promise<string> {
 }
 
 export async function createGame(game: GameData): Promise<string> {
-	let code = await createCode();
+	const code = await createCode();
 
 	const gamesRef = ref(db, CODE_LIST_PATH);
 	await push(gamesRef, code);
@@ -51,7 +51,7 @@ export async function createGame(game: GameData): Promise<string> {
 export async function resetGame(code: string, game: GameData): Promise<void> {
 	if (await doesGameExist(code)) {
 		const gameRef = ref(db, getGamePath(code));
-		set(gameRef, game);
+		await set(gameRef, game);
 	}
 }
 
@@ -60,21 +60,21 @@ export function getGamePath(code: string) {
 }
 
 export async function cleanupPlayers(code: string): Promise<void> {
-	let lastPlayerCleanupPath = `${getGamePath(code)}/meta/lastPlayerCleanup`;
+	const lastPlayerCleanupPath = `${getGamePath(code)}/meta/lastPlayerCleanup`;
 	const lastPlayerCleanupSnapshot = await get(ref(db, lastPlayerCleanupPath));
-	let lastPlayerCleanup: number = lastPlayerCleanupSnapshot.exists() ? lastPlayerCleanupSnapshot.val() : 0;
+	const lastPlayerCleanup: number = lastPlayerCleanupSnapshot.exists() ? lastPlayerCleanupSnapshot.val() : 0;
 
-	let now = Date.now();
+	const now = Date.now();
 	if (lastPlayerCleanup + PLAYER_CLEANUP_TIME >= now) {
 		return;
 	}
 
-	let playersPath = `${getGamePath(code)}/players`;
+	const playersPath = `${getGamePath(code)}/players`;
 	const playersSnapshot = await get(ref(db, playersPath));
 
 	if (!playersSnapshot.exists) return;
 
-	let players: Record<string, PlayerData> = playersSnapshot.val();
+	const players: Record<string, PlayerData> = playersSnapshot.val();
 
 	Object.entries(players).forEach(([key, player]) => {
 		if (player.lastActive + PLAYER_INACTIVE_TIME < now) {
@@ -88,24 +88,24 @@ export async function cleanupPlayers(code: string): Promise<void> {
 }
 
 export async function cleanupGames(): Promise<void> {
-	let lastCleanupPath = `${META_PATH}/lastCleanup`;
+	const lastCleanupPath = `${META_PATH}/lastCleanup`;
 	const lastCleanupSnapshot = await get(ref(db, lastCleanupPath));
-	let lastCleanup: number = lastCleanupSnapshot.exists() ? lastCleanupSnapshot.val() : 0;
+	const lastCleanup: number = lastCleanupSnapshot.exists() ? lastCleanupSnapshot.val() : 0;
 
-	let now = Date.now();
+	const now = Date.now();
 	if (lastCleanup + GAME_INACTIVE_TIME / 2 >= now) {
 		return;
 	}
 
-	let gamesListSnapshot = await get(ref(db, CODE_LIST_PATH));
-	let gamesListObject: CodeList = gamesListSnapshot.exists() ? gamesListSnapshot.val() : {};
-	let gamesSnapshot = await get(ref(db, GAMES_PATH));
-	let gamesObject: Record<string, GameData> = gamesSnapshot.exists() ? gamesSnapshot.val() : {};
+	const gamesListSnapshot = await get(ref(db, CODE_LIST_PATH));
+	const gamesListObject: CodeList = gamesListSnapshot.exists() ? gamesListSnapshot.val() : {};
+	const gamesSnapshot = await get(ref(db, GAMES_PATH));
+	const gamesObject: Record<string, GameData> = gamesSnapshot.exists() ? gamesSnapshot.val() : {};
 
 	// Games in code list without game data
 	Object.entries(gamesListObject)
-		.filter(([codeKey, code]) => !Object.keys(gamesObject).includes(code))
-		.forEach(([codeKey, code]) => {
+		.filter(([, code]) => !Object.keys(gamesObject).includes(code))
+		.forEach(([codeKey]) => {
 			remove(ref(db, `${CODE_LIST_PATH}/${codeKey}`));
 		});
 
@@ -118,7 +118,7 @@ export async function cleanupGames(): Promise<void> {
 
 	// Games in code list and data which have expired
 	Object.entries(gamesListObject)
-		.filter(([codeKey, code]) => Object.keys(gamesObject).includes(code))
+		.filter(([, code]) => Object.keys(gamesObject).includes(code))
 		.forEach(([codeKey, code]) => {
 			if (gamesObject[code].lastModified + GAME_INACTIVE_TIME < now) {
 				remove(ref(db, `${CODE_LIST_PATH}/${codeKey}`));
