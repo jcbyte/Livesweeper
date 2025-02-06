@@ -44,7 +44,7 @@ export default function GamePage() {
 
 	// todo win/lose animations
 
-	// todo weird bug that data set from updatePlayerData is sent to "/null"
+	// todo game crashes immediately on load
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		const now: number = Date.now();
@@ -101,9 +101,9 @@ export default function GamePage() {
 		async function init() {
 			if (!(await checkGameExists())) return;
 
-			// keepAliveIntervalId = setInterval(() => {
-			// 	playerKeepAlive();
-			// }, PLAYER_INACTIVE_TIME / 10);
+			keepAliveIntervalId = setInterval(() => {
+				playerKeepAlive();
+			}, PLAYER_INACTIVE_TIME / 10);
 
 			cleanupPlayers(code!);
 			cleanupPlayersIntervalId = setInterval(() => {
@@ -115,7 +115,7 @@ export default function GamePage() {
 		init();
 
 		return () => {
-			// clearInterval(keepAliveIntervalId);
+			clearInterval(keepAliveIntervalId);
 			clearInterval(cleanupPlayersIntervalId);
 			// document.removeEventListener("mousemove", handleMouseMove);
 		};

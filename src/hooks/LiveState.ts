@@ -17,6 +17,8 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 	const [object, setObject] = useState<T | undefined>(undefined);
 	const listenersRef = useRef<Record<string, Listener>>({});
 
+	const pathRef = useRef<string | null>(path);
+
 	// async function syncLive() {
 	// 	const snapshot: DataSnapshot = await get(ref(db, path));
 	// 	if (snapshot.exists()) {
@@ -39,9 +41,8 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		const normalisedPath = normalisePath(path);
 		return normalisedPath === "/" ? 0 : normalisedPath.split("/").length - 1;
 	}
-	const pathItems = path ? getPathComponentCount(path) : 0;
 	function getRefPath(ref: DatabaseReference, path: string[] = []): string[] {
-		if (!ref.parent) return path.slice(pathItems);
+		if (!ref.parent) return path.slice(pathRef.current ? getPathComponentCount(pathRef.current) : 0);
 
 		return getRefPath(ref.parent, [ref.key ?? "", ...path]);
 	}
@@ -153,13 +154,15 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 			}
 		}
 		init();
+
+		pathRef.current = path;
 	}, [path]);
 
-	function writeChanges(changes: Difference[]) {
+	const writeChanges = (changes: Difference[]) => {
 		const updates: Record<string, any> = {};
 
 		changes.forEach((change) => {
-			const changePath = `${path}${getPath(change.path.slice(1))}`;
+			const changePath = `${pathRef.current}${getPath(change.path.slice(1))}`;
 
 			if (change.type === "CREATE" || change.type === "CHANGE") {
 				updates[changePath] = change.value;
@@ -169,12 +172,12 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		});
 
 		update(ref(db), updates);
-	}
+	};
 
 	function updateObject(updater: (newObject: T) => T) {
 		setObject((prev) => {
 			const newObject = updater(prev as T);
-			const changes = diff([object], [newObject]);
+			const changes = diff([prev], [newObject]);
 			writeChanges(changes);
 			return newObject;
 		});
