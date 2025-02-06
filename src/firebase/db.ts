@@ -1,4 +1,4 @@
-import { DataSnapshot, get, push, ref, remove, set } from "firebase/database";
+import { DataSnapshot, get, push, ref, set, update } from "firebase/database";
 import { GAME_INACTIVE_TIME, PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME } from "../globals";
 import { CodeList, GameData, PlayerData } from "../types";
 import { db } from "./firebase";
@@ -43,8 +43,6 @@ export async function createGame(game: GameData): Promise<string> {
 	const gameRef = ref(db, getGamePath(code));
 	await set(gameRef, game);
 
-	// todo perform all updates at once
-
 	return code;
 }
 
@@ -76,15 +74,17 @@ export async function cleanupPlayers(code: string): Promise<void> {
 
 	const players: Record<string, PlayerData> = playersSnapshot.val();
 
+	const updates: Record<string, any> = {};
+
 	Object.entries(players).forEach(([key, player]) => {
 		if (player.lastActive + PLAYER_INACTIVE_TIME < now) {
-			remove(ref(db, `${playersPath}/${key}`));
+			updates[`${playersPath}/${key}`] = null;
 		}
 	});
 
-	set(ref(db, lastPlayerCleanupPath), now);
+	updates[lastPlayerCleanupPath] = now;
 
-	// todo perform all updates at once
+	update(ref(db), updates);
 }
 
 export async function cleanupGames(): Promise<void> {
@@ -102,18 +102,20 @@ export async function cleanupGames(): Promise<void> {
 	const gamesSnapshot = await get(ref(db, GAMES_PATH));
 	const gamesObject: Record<string, GameData> = gamesSnapshot.exists() ? gamesSnapshot.val() : {};
 
+	const updates: Record<string, any> = {};
+
 	// Games in code list without game data
 	Object.entries(gamesListObject)
 		.filter(([, code]) => !Object.keys(gamesObject).includes(code))
 		.forEach(([codeKey]) => {
-			remove(ref(db, `${CODE_LIST_PATH}/${codeKey}`));
+			updates[`${CODE_LIST_PATH}/${codeKey}`] = null;
 		});
 
 	// Games with data not in code list
 	Object.keys(gamesObject)
 		.filter((code) => !Object.values(gamesListObject).includes(code))
 		.forEach((code) => {
-			remove(ref(db, getGamePath(code)));
+			updates[getGamePath(code)] = null;
 		});
 
 	// Games in code list and data which have expired
@@ -121,12 +123,12 @@ export async function cleanupGames(): Promise<void> {
 		.filter(([, code]) => Object.keys(gamesObject).includes(code))
 		.forEach(([codeKey, code]) => {
 			if (gamesObject[code].lastModified + GAME_INACTIVE_TIME < now) {
-				remove(ref(db, `${CODE_LIST_PATH}/${codeKey}`));
-				remove(ref(db, getGamePath(code)));
+				updates[`${CODE_LIST_PATH}/${codeKey}`] = null;
+				updates[getGamePath(code)] = null;
 			}
 		});
 
-	set(ref(db, lastCleanupPath), now);
+	updates[lastCleanupPath] = now;
 
-	// todo perform all updates at once
+	update(ref(db), updates);
 }

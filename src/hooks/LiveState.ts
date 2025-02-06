@@ -1,4 +1,4 @@
-import { DataSnapshot, onChildAdded, onChildChanged, onChildRemoved, ref, remove, set } from "firebase/database";
+import { DataSnapshot, onChildAdded, onChildChanged, onChildRemoved, ref, update } from "firebase/database";
 import diff, { Difference } from "microdiff";
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
@@ -40,18 +40,20 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		};
 	}, [path]);
 
-	// todo perform all updates at once
 	function writeChanges(changes: Difference[]) {
+		const updates: Record<string, any> = {};
+
 		changes.forEach((change: Difference) => {
 			const changePath = `${path}/${change.path.slice(1).join("/")}`;
-			const dbRef = ref(db, changePath);
 
 			if (change.type === "CREATE" || change.type === "CHANGE") {
-				set(dbRef, change.value);
+				updates[changePath] = change.value;
 			} else {
-				remove(dbRef);
+				updates[changePath] = null;
 			}
 		});
+
+		update(ref(db), updates);
 	}
 
 	function updateObject(updater: (newObject: T) => T) {
