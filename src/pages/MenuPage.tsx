@@ -32,6 +32,8 @@ export default function MenuPage() {
 		navigate(`/game/${code}`);
 	}
 
+	// todo press enter on game code
+
 	return (
 		<div className="flex justify-center items-center h-screen">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">

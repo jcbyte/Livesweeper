@@ -4,15 +4,14 @@ import { Spinner } from "@heroui/spinner";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import Cursor from "../assets/Cursor";
 import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
+import LiveCursors from "../components/LiveCursors";
 import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../firebase/db";
 import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
-import { getRandomColor } from "../util/randomUtil";
 
 function ActualGamePage({
 	code,
@@ -149,29 +148,7 @@ function ActualGamePage({
 							}}
 						/>
 
-						{game.players &&
-							Object.entries(game.players)
-								.filter(
-									([key, player]) =>
-										key != playerUuidRef.current && player.lastActive + PLAYER_INACTIVE_TIME >= Date.now()
-								)
-								.map(([key, player]) => {
-									return (
-										<div
-											key={key}
-											className="absolute"
-											style={{
-												left: player.x * (boardRef.current?.getBoundingClientRect().width ?? 0),
-												top: player.y * (boardRef.current?.getBoundingClientRect().height ?? 0),
-											}}
-										>
-											<Cursor
-												colour={getRandomColor(key)}
-												size={(boardRef.current?.getBoundingClientRect().width ?? 0) / 16}
-											/>
-										</div>
-									);
-								})}
+						<LiveCursors yourUuid={playerUuidRef.current} players={game.players} boardRef={boardRef.current} />
 					</div>
 				</div>
 
