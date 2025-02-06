@@ -13,7 +13,7 @@ import diff, { Difference } from "microdiff";
 import { useEffect, useRef, useState } from "react";
 import { db } from "../firebase/firebase";
 
-export function useLiveState<T>(path: string): [T | undefined, (updater: (newObject: T) => T) => void] {
+export function useLiveState<T>(path: string | null): [T | undefined, (updater: (newObject: T) => T) => void] {
 	const [object, setObject] = useState<T | undefined>(undefined);
 	const listenersRef = useRef<Record<string, Listener>>({});
 
@@ -35,7 +35,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		return normalisePath(pathItems.join("/"));
 	}
 
-	const pathItems = path.split("/").length - 1; // Note: Assumes path "/dir/dir"
+	const pathItems = normalisePath(path ?? "").split("/").length ?? 0 - 1; // Note: Assumes path "/dir/dir"
 	function getRefPath(ref: DatabaseReference, path: string[] = []): string[] {
 		if (!ref.parent) return path.splice(pathItems);
 
@@ -139,8 +139,9 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 
 	useEffect(() => {
 		// Get initial data via handleChildChanged running on each existing child
-
 		async function init() {
+			if (!path) return;
+
 			const snapshot: DataSnapshot = await get(ref(db, path));
 			if (snapshot.exists()) {
 				setObject(snapshot.val());

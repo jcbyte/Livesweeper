@@ -25,7 +25,7 @@ export default function LiveCursors({
 						return (
 							<motion.div
 								key={key}
-								className="absolute"
+								className="absolute z-50"
 								animate={{ left: targetX, top: targetY }}
 								transition={{ type: "spring", stiffness: 100, damping: 20 }}
 							>
