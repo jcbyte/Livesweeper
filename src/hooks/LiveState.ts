@@ -15,8 +15,8 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	// }
 
 	type ListenersObj =
-		| { update: Unsubscribe }
-		| { add: Unsubscribe; remove: Unsubscribe; object: Record<string, ListenersObj> };
+		| { unsubscribeUpdate: Unsubscribe }
+		| { unsubscribeAdd: Unsubscribe; unsubscribeRemove: Unsubscribe; object: Record<string, ListenersObj> };
 	function createListeners(snapshot: DataSnapshot, path: any[] = []): ListenersObj {
 		if (!snapshot.exists()) {
 			throw "Data does not exist!";
@@ -36,17 +36,19 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 				handleChildRemoved(snapshot, path);
 			});
 
-			return { add: addListener, remove: removeListener, object: a };
+			return { unsubscribeAdd: addListener, unsubscribeRemove: removeListener, object: a };
 		} else {
 			const changeListener = onValue(snapshot.ref, (snapshot: DataSnapshot) => {
 				handleValueChange(snapshot, path);
 			});
 
-			return { update: changeListener };
+			return { unsubscribeUpdate: changeListener };
 		}
 	}
 
 	function handleValueChange(snapshot: DataSnapshot, path: any[]) {
+		console.log("value changed", snapshot.ref.key, path);
+
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
 
@@ -62,7 +64,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	}
 
 	function handleChildAdded(snapshot: DataSnapshot, path: any[]) {
-		// console.log("value added", snapshot.ref.key, path);
+		console.log("value added", snapshot.ref.key, path);
 
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
@@ -89,13 +91,32 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 
 			const [objectAtPath, listenersAtPath] = path.reduce(
 				([objectAt, listenersAt], key) => {
-					return [objectAt[key], listenersAt.object[key]];
+					return [
+						objectAt && key in objectAt ? objectAt[key] : null,
+						listenersAt && key in listenersAt.object ? listenersAt.object[key] : null,
+					];
 				},
 				[newObject, listenersRef.current]
 			);
 
-			delete objectAtPath[snapshot.key!];
-			// 	listenersAtPath.object[snapshot.key!]; // todo need to fix this
+			if (objectAtPath && snapshot.key! in objectAtPath) {
+				delete objectAtPath[snapshot.key!];
+			}
+
+			function unsubscribeListeners(listeners: ListenersObj) {
+				if ("unsubscribeUpdate" in listeners) {
+					listeners.unsubscribeUpdate();
+				} else {
+					// This is called with all child components first and so does not require recursing through `.object`
+
+					listeners.unsubscribeAdd();
+					listeners.unsubscribeRemove();
+				}
+			}
+			if (listenersAtPath && snapshot.key! in listenersAtPath.object) {
+				unsubscribeListeners(listenersAtPath.object[snapshot.key!]);
+				delete listenersAtPath.object[snapshot.key!];
+			}
 
 			return newObject;
 		});
