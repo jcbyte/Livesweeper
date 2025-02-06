@@ -102,9 +102,7 @@ export function revealCell(game: GameData, row: number, col: number, initialCall
 	if (initialCall) {
 		if (game.board[row][col].value === "bomb") {
 			loseGame(game);
-		}
-
-		if (checkWin(game.board)) {
+		} else if (checkWin(game.board)) {
 			winGame(game);
 		}
 	}
