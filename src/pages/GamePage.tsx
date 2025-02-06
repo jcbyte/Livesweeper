@@ -28,7 +28,6 @@ function ActualGamePage({
 	const boardRef = useRef<HTMLDivElement>(null);
 	const lastUpdateRef = useRef<number>(0);
 
-	// todo QoL i.e. bombs
 	// todo animations
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
@@ -94,15 +93,28 @@ function ActualGamePage({
 
 	return (
 		<>
-			<div className="flex flex-col items-center h-full pt-12">
+			<div className="flex flex-col items-center h-full py-12">
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-2">Livesweeper</h1>
 
-				<div className="flex items-center gap-2 mb-8">
+				<div className="flex items-center gap-2 mb-2">
 					<h2 className="font-semibold">Code:</h2>
 					<Snippet symbol="">{code}</Snippet>
 				</div>
 
 				<div className="max-w-[1024px] w-full px-8">
+					<div className="flex w-full mb-1">
+						<div className="text-md font-bold">
+							{game.boardSize.rows} x {game.boardSize.cols} Board
+						</div>
+						<div className="text-md font-semibold ml-auto">
+							{game.boardSize.bombs -
+								game.board.reduce(
+									(rowCount, row) => rowCount + row.reduce((colCount, cell) => colCount + (cell.flagged ? 1 : 0), 0),
+									0
+								)}{" "}
+							💣
+						</div>
+					</div>
 					<div className="relative bg-gray-900/40 p-8 rounded-lg shadow-lg w-full" ref={boardRef}>
 						<Board
 							game={game}

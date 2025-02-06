@@ -37,7 +37,7 @@ export default function MenuPage() {
 	}, []);
 
 	return (
-		<div className="flex justify-center items-center h-full">
+		<div className="flex justify-center items-center h-screen">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
