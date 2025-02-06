@@ -1,7 +1,7 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { motion, useAnimation } from "framer-motion";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/Alert";
 import { createGame, doesGameExist } from "../firebase/db";
@@ -18,6 +18,8 @@ export default function MenuPage() {
 	const navigate = useNavigate();
 	const alert = useAlert();
 
+	const joinButtonRef = useRef<HTMLButtonElement>(null);
+
 	const joinShakeAnimation = useAnimation();
 	async function handleJoinShake() {
 		await joinShakeAnimation.start({
@@ -32,8 +34,6 @@ export default function MenuPage() {
 		navigate(`/game/${code}`);
 	}
 
-	// todo press enter on game code
-
 	return (
 		<div className="flex justify-center items-center h-screen">
 			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
@@ -47,6 +47,11 @@ export default function MenuPage() {
 							value={inputCode}
 							onValueChange={(newValue: string) => {
 								setInputCode(newValue.toUpperCase());
+							}}
+							onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+								if (e.key === "Enter" && joinButtonRef.current) {
+									joinButtonRef.current.click();
+								}
 							}}
 						/>
 						<Button
@@ -63,6 +68,7 @@ export default function MenuPage() {
 								}
 								setVerifyingCode(false);
 							}}
+							ref={joinButtonRef}
 						>
 							Join
 						</Button>
