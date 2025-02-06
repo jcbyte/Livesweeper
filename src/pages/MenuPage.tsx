@@ -36,7 +36,17 @@ export default function MenuPage() {
 
 	return (
 		<div className="flex justify-center items-center h-screen">
-			<div className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md">
+			<motion.div
+				className="bg-gray-900/40 p-8 rounded-lg shadow-lg min-w-md"
+				initial={{ scale: 0 }}
+				animate={{ scale: 1 }}
+				exit={{ scale: 0, transition: { duration: 0.3, ease: "easeIn" } }}
+				transition={{
+					type: "spring",
+					stiffness: 100,
+					damping: 12,
+				}}
+			>
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>
@@ -114,7 +124,7 @@ export default function MenuPage() {
 						})}
 					</motion.div>
 				</div>
-			</div>
+			</motion.div>
 		</div>
 	);
 }
