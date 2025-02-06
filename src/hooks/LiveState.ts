@@ -24,7 +24,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	// 	}
 	// }
 
-	// todo test arrays
+	// todo error when adding large element
 
 	function normalisePath(path: string): string {
 		const cleanedPath = path
