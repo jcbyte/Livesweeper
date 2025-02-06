@@ -24,14 +24,13 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	// 	}
 	// }
 
-	// todo error when adding large element
-
 	function normalisePath(path: string): string {
 		const cleanedPath = path
 			.replace(/^\/+|\/+$/g, "") // Remove leading/trailing slashes
 			.replace(/\/+/g, "/"); // Replace multiple slashes with one
 		return `/${cleanedPath}`;
 	}
+
 	function getPath(pathItems: (string | number)[]): string {
 		return normalisePath(pathItems.join("/"));
 	}
@@ -78,6 +77,18 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		}
 	}
 
+	function unsubscribeListeners(pathKey: string) {
+		if (!(pathKey in listenersRef.current)) return;
+
+		const listeners = listenersRef.current[pathKey];
+		if (listeners.primitive) {
+			listeners.unsubscribeUpdate();
+		} else {
+			listeners.unsubscribeAdd();
+			listeners.unsubscribeRemove();
+		}
+	}
+
 	function handleValueChange(snapshot: DataSnapshot, path: string[]) {
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
@@ -117,18 +128,14 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 			}, newObject);
 
 			delete objectAtPath[snapshot.ref.key!];
-			const itemPathKey = getPath([...path, snapshot.ref.key!]);
-			delete listenersRef.current[itemPathKey];
 
-			console.log("value removed", snapshot.ref.key, path, pathKey, itemPathKey);
+			const itemPathKey = getPath([...path, snapshot.ref.key!]);
+			unsubscribeListeners(itemPathKey);
+			delete listenersRef.current[itemPathKey];
 
 			return newObject;
 		});
 	}
-
-	useEffect(() => {
-		console.log(object, listenersRef.current);
-	}, [object]);
 
 	useEffect(() => {
 		// Get initial data via handleChildChanged running on each existing child

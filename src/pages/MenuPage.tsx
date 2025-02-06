@@ -50,19 +50,6 @@ export default function MenuPage() {
 					damping: 12,
 				}}
 			>
-				<div
-					className="w-10 h-10 bg-red-500"
-					onClick={async () => {
-						type t = { a: null } | { a: 2 };
-						const a: t = { a: null };
-						function b(c: t) {
-							c.a = 2;
-						}
-						console.log(a);
-						b(a);
-						console.log(a);
-					}}
-				/>
 				<h1 className="text-4xl font-bold text-center text-pink-200 mb-8">Livesweeper</h1>
 				<div className="flex flex-col gap-5">
 					<motion.div className="flex gap-5 items-center" animate={joinShakeAnimation}>
