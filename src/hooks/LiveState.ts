@@ -26,11 +26,21 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 
 	// todo test arrays
 
+	function normalisePath(path: string): string {
+		const cleanedPath = path
+			.replace(/^\/+|\/+$/g, "") // Remove leading/trailing slashes
+			.replace(/\/+/g, "/"); // Replace multiple slashes with one
+		return `/${cleanedPath}`;
+	}
+	function getPath(pathItems: (string | number)[]): string {
+		return normalisePath(pathItems.join("/"));
+	}
+
 	const pathItems = path.split("/").length - 1; // Note: Assumes path "/dir/dir"
-	function getPath(ref: DatabaseReference, path: string[] = []): string[] {
+	function getRefPath(ref: DatabaseReference, path: string[] = []): string[] {
 		if (!ref.parent) return path.splice(pathItems);
 
-		return getPath(ref.parent, [ref.key ?? "", ...path]);
+		return getRefPath(ref.parent, [ref.key ?? "", ...path]);
 	}
 
 	type PrimitiveListener = { unsubscribeUpdate: Unsubscribe };
@@ -40,8 +50,8 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	function createListeners(snapshot: DataSnapshot) {
 		if (!snapshot.exists()) return;
 
-		const path = getPath(snapshot.ref);
-		const pathKey = `/${path.join("/")}`;
+		const path = getRefPath(snapshot.ref);
+		const pathKey = getPath(path);
 
 		// Only create listeners if they do not already exist
 		if (pathKey in listenersRef.current) return;
@@ -69,8 +79,6 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	}
 
 	function handleValueChange(snapshot: DataSnapshot, path: string[]) {
-		console.log("value changed", snapshot.ref.key, path);
-
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
 
@@ -86,8 +94,6 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	}
 
 	function handleChildAdded(snapshot: DataSnapshot, path: string[]) {
-		console.log("value added", snapshot.ref.key);
-
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
 
@@ -95,7 +101,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 				return objectAt[key];
 			}, newObject);
 
-			objectAtPath[snapshot.key!] = snapshot.val();
+			objectAtPath[snapshot.ref.key!] = snapshot.val();
 			createListeners(snapshot);
 
 			return newObject;
@@ -103,8 +109,6 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 	}
 
 	function handleChildRemoved(snapshot: DataSnapshot, path: string[], pathKey: string) {
-		console.log("value removed", snapshot.ref.key);
-
 		setObject((prev) => {
 			const newObject = structuredClone(prev);
 
@@ -112,8 +116,11 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 				return [objectAt[key]];
 			}, newObject);
 
-			delete objectAtPath[snapshot.key!];
-			delete listenersRef.current[pathKey]; // todo doesn't seem to delete listeners for nested objects when parent is deleted
+			delete objectAtPath[snapshot.ref.key!];
+			const itemPathKey = getPath([...path, snapshot.ref.key!]);
+			delete listenersRef.current[itemPathKey];
+
+			console.log("value removed", snapshot.ref.key, path, pathKey, itemPathKey);
 
 			return newObject;
 		});
@@ -140,7 +147,7 @@ export function useLiveState<T>(path: string): [T | undefined, (updater: (newObj
 		const updates: Record<string, any> = {};
 
 		changes.forEach((change: Difference) => {
-			const changePath = `${path}/${change.path.slice(1).join("/")}`;
+			const changePath = `${path}${getPath(change.path.slice(1))}`;
 
 			if (change.type === "CREATE" || change.type === "CHANGE") {
 				updates[changePath] = change.value;
