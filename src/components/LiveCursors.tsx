@@ -12,6 +12,8 @@ export default function LiveCursors({
 	players: Record<string, PlayerData>;
 	boardRef: HTMLDivElement | null;
 }) {
+	// todo animate cursor movement to make less "jumpy"
+
 	return (
 		<>
 			{players &&

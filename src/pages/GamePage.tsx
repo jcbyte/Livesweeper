@@ -1,6 +1,7 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
 import { Spinner } from "@heroui/spinner";
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
@@ -12,6 +13,8 @@ import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME } from "../globals";
 import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
+
+export const wait = (duration: number) => new Promise<void>((resolve) => setTimeout(resolve, duration));
 
 function ActualGamePage({
 	code,
@@ -28,6 +31,7 @@ function ActualGamePage({
 	const lastUpdateRef = useRef<number>(0);
 
 	// todo animations
+	// todo win/lose animations
 	// todo reduce mouse position sending
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
@@ -176,31 +180,7 @@ function ActualGamePage({
 	);
 }
 
-function GameLoadingPage({ description }: { description: string }) {
-	return (
-		<div className="flex flex-col justify-center items-center h-full">
-			<h1 className="text-6xl font-bold text-center text-pink-200 mb-1">Livesweeper</h1>
-			<p className="text-2xl text-center text-pink-200 mb-8">{description}</p>
-			<Spinner color="secondary" size="lg" />
-		</div>
-	);
-}
-
-function GameLoader({ code }: { code: string }) {
-	const [game, setGame] = useLiveState<GameData>(getGamePath(code));
-
-	return (
-		<>
-			{game ? (
-				<ActualGamePage code={code} game={game} setGame={setGame} />
-			) : (
-				<GameLoadingPage description={`Loading Game ${code}`} />
-			)}
-		</>
-	);
-}
-
-function GameValidator({ code }: { code?: string }) {
+function GameLoader({ code, loadingComponent }: { code?: string; loadingComponent: React.ReactElement }) {
 	const navigate = useNavigate();
 	const alert = useAlert();
 
@@ -211,6 +191,7 @@ function GameValidator({ code }: { code?: string }) {
 			navigate("/");
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
 		} else {
+			await wait(3000);
 			setGameExists(true);
 		}
 	}
@@ -219,9 +200,13 @@ function GameValidator({ code }: { code?: string }) {
 		checkGameExists();
 	}, []);
 
-	return (
-		<>{gameExists ? <GameLoader code={code!} /> : <GameLoadingPage description={`Verifying Game ${code} Exists`} />}</>
-	);
+	function GameStateLoader({ loadingComponent }: { loadingComponent: React.ReactElement }) {
+		const [game, setGame] = useLiveState<GameData>(getGamePath(code!));
+
+		return <>{game ? <ActualGamePage code={code!} game={game} setGame={setGame} /> : loadingComponent}</>;
+	}
+
+	return <>{gameExists ? <GameStateLoader loadingComponent={loadingComponent} /> : loadingComponent}</>;
 }
 
 export default function GamePage() {
@@ -230,18 +215,34 @@ export default function GamePage() {
 
 	return (
 		<>
-			<Button
+			<motion.div
 				className="fixed top-4 left-4"
-				color="secondary"
-				variant="bordered"
-				onPress={() => {
-					navigate("/");
-				}}
+				initial={{ y: "calc(-100% - 1rem)" }}
+				animate={{ y: 0 }}
+				exit={{ y: "calc(-100% - 1rem)" }}
+				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
-				Home
-			</Button>
+				<Button
+					color="secondary"
+					variant="bordered"
+					onPress={() => {
+						navigate("/");
+					}}
+				>
+					Home
+				</Button>
+			</motion.div>
 
-			<GameValidator code={code} />
+			<GameLoader
+				code={code}
+				loadingComponent={
+					<div className="flex flex-col justify-center items-center h-screen">
+						<h1 className="text-6xl font-bold text-center text-pink-200 mb-1">Livesweeper</h1>
+						<p className="text-2xl text-center text-pink-200 mb-8">Loading Game: {code}</p>
+						<Spinner color="secondary" size="lg" />
+					</div>
+				}
+			/>
 		</>
 	);
 }
