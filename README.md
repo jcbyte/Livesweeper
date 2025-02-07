@@ -4,7 +4,7 @@ A real-time multiplayer game of collaborative Minesweeper.
 
 ## Production Build
 
-[todo](todo)
+[https://livesweeper.vercel.app](https://livesweeper.vercel.app)
 
 ## Run Locally
 
