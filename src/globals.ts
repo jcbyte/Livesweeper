@@ -3,8 +3,8 @@ import { BoardSizeData } from "./types";
 export const BOARD_SIZES: { name: string; sizeData: BoardSizeData }[] = [
 	{ name: "S", sizeData: { rows: 9, cols: 9, bombs: 10 } },
 	{ name: "M", sizeData: { rows: 16, cols: 16, bombs: 40 } },
-	{ name: "L", sizeData: { rows: 30, cols: 16, bombs: 99 } },
-	{ name: "XL", sizeData: { rows: 30, cols: 20, bombs: 150 } },
+	{ name: "L", sizeData: { rows: 16, cols: 30, bombs: 99 } },
+	{ name: "XL", sizeData: { rows: 20, cols: 30, bombs: 150 } },
 ];
 
 export const PLAYER_INACTIVE_TIME = 10 * 1000;

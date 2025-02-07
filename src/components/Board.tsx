@@ -14,8 +14,8 @@ export default function Board({
 		<div
 			className="grid gap-0"
 			style={{
-				gridTemplateColumns: `repeat(${game.boardSize.rows}, minmax(0, 1fr))`,
-				gridTemplateRows: `repeat(${game.boardSize.cols}, minmax(0, 1fr))`,
+				gridTemplateColumns: `repeat(${game.boardSize.cols}, minmax(0, 1fr))`,
+				gridTemplateRows: `repeat(${game.boardSize.rows}, minmax(0, 1fr))`,
 			}}
 		>
 			{game.board.map((row, rowIndex) =>
