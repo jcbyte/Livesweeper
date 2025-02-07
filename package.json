@@ -19,6 +19,7 @@
 		"@heroui/theme": "^2.4.6",
 		"@types/react-router-dom": "^5.3.3",
 		"firebase": "^11.2.0",
+		"firebase-live-state": "^1.0.2",
 		"framer-motion": "^12.0.11",
 		"microdiff": "^1.5.0",
 		"react": "^18.3.1",

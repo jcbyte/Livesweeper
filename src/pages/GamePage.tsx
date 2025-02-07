@@ -1,6 +1,7 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
 import { Spinner } from "@heroui/spinner";
+import useLiveState from "firebase-live-state";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Confetti from "react-confetti";
@@ -10,8 +11,8 @@ import { useAlert } from "../components/Alert";
 import Board from "../components/Board";
 import LiveCursors from "../components/LiveCursors";
 import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../firebase/db";
+import { db } from "../firebase/firebase";
 import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } from "../globals";
-import { useLiveState } from "../hooks/LiveState";
 import { GameData, PlayerData } from "../types";
 import { generateGame, revealCell } from "../util/minesweeperLogic";
 import { wait } from "../util/util";
@@ -29,7 +30,7 @@ export default function GamePage() {
 	const lastUpdateRef = useRef<number>(0);
 	const lastPositionUpdateRef = useRef<number>(0);
 
-	const [game, setGame] = useLiveState<GameData>(gameExists ? getGamePath(code!) : null);
+	const [game, setGame] = useLiveState<GameData>(db, gameExists ? getGamePath(code!) : null);
 
 	async function checkGameExists(): Promise<boolean> {
 		if (!code || !(await doesGameExist(code))) {
