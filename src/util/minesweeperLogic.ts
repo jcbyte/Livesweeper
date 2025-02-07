@@ -1,5 +1,7 @@
 import { BoardData, BoardSizeData, CellData, GameData } from "../types";
 
+// todo on generate board don't generate where click
+
 export function generateBoard(boardSize: BoardSizeData): BoardData {
 	const bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
 

@@ -228,26 +228,22 @@ export default function GamePage() {
 									<Board
 										game={game}
 										onCellClick={(row: number, col: number) => {
-											if (!game.board) {
-												setGame((prev) => {
-													const newGame = structuredClone(prev);
-													newGame.board = generateBoard(newGame.boardSize);
-													return newGame;
-												});
-
-												return; // todo need to also do below
-											}
-
 											if (game.state !== "play") return;
 
-											if (!game.board[row][col].flagged && !game.board[row][col].revealed) {
-												setGame((prev) => {
-													const newGame = structuredClone(prev);
+											setGame((prev) => {
+												const newGame = structuredClone(prev);
+
+												if (!game.board) {
+													newGame.board = generateBoard(newGame.boardSize);
+												}
+
+												if (!newGame.board![row][col].flagged && !newGame.board![row][col].revealed) {
 													revealCell(newGame, row, col);
-													newGame.lastModified = Date.now();
-													return newGame;
-												});
-											}
+												}
+
+												newGame.lastModified = Date.now();
+												return newGame;
+											});
 										}}
 										onCellRightClick={(row: number, col: number) => {
 											if (!game.board) return;
