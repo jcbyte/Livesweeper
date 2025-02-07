@@ -96,24 +96,22 @@ export default function GamePage() {
 		checkGameExists();
 	}, []);
 
-	// todo fix uncommenting player updates causes the game to immediately crash
-
 	useEffect(() => {
 		if (game) {
-			// const keepAliveIntervalId = setInterval(() => {
-			// 	playerKeepAlive();
-			// }, PLAYER_INACTIVE_TIME / 10);
+			const keepAliveIntervalId = setInterval(() => {
+				playerKeepAlive();
+			}, PLAYER_INACTIVE_TIME / 10);
 
 			cleanupPlayers(code!);
 			const cleanupPlayersIntervalId = setInterval(() => {
 				cleanupPlayers(code!);
 			}, PLAYER_CLEANUP_TIME);
 
-			// document.addEventListener("mousemove", handleMouseMove);
+			document.addEventListener("mousemove", handleMouseMove);
 			return () => {
-				// clearInterval(keepAliveIntervalId);
+				clearInterval(keepAliveIntervalId);
 				clearInterval(cleanupPlayersIntervalId);
-				// 	document.removeEventListener("mousemove", handleMouseMove);
+				document.removeEventListener("mousemove", handleMouseMove);
 			};
 		}
 	}, [game]);

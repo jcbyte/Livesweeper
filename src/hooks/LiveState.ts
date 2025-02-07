@@ -13,7 +13,9 @@ import diff, { Difference } from "microdiff";
 import { useEffect, useRef, useState } from "react";
 import { db } from "../firebase/firebase";
 
-export function useLiveState<T>(path: string | null): [T | undefined, (updater: (newObject: T) => T) => void] {
+export function useLiveState<T>(
+	path: string | null
+): [T | undefined, (updater: (newObject: T) => T) => void, () => void] {
 	const [object, setObject] = useState<T | undefined>(undefined);
 	const listenersRef = useRef<Record<string, Listener>>({});
 
@@ -27,9 +29,7 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 	// }
 
 	function normalisePath(path: string): string {
-		const cleanedPath = path
-			.replace(/^\/+|\/+$/g, "") // Remove leading/trailing slashes
-			.replace(/\/+/g, "/"); // Replace multiple slashes with one
+		const cleanedPath = path.replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
 		return `/${cleanedPath}`;
 	}
 
@@ -99,6 +99,12 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 			const newObject = structuredClone(prev);
 
 			path.reduce((objectAt: any, key, index) => {
+				// If the local parent object doest exist yet then temporarily create it to ensure local structure.
+				// The order of callbacks should ensure this exists but React state setting is asynchronous so this may not be the case
+				if (!(key in objectAt)) {
+					objectAt[key] = {};
+				}
+
 				if (index == path.length - 1) {
 					objectAt[key] = snapshot.val();
 				}
@@ -114,6 +120,12 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 			const newObject = structuredClone(prev);
 
 			const objectAtPath = path.reduce((objectAt: any, key) => {
+				// If the local parent object doest exist yet then temporarily create it to ensure local structure.
+				// The order of callbacks should ensure this exists but React state setting is asynchronous so this may not be the case
+				if (!(key in objectAt)) {
+					objectAt[key] = {};
+				}
+
 				return objectAt[key];
 			}, newObject);
 
@@ -143,13 +155,13 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 	}
 
 	useEffect(() => {
-		// Get initial data via handleChildChanged running on each existing child
 		async function init() {
 			if (!path) return;
 
 			const snapshot: DataSnapshot = await get(ref(db, path));
 			if (snapshot.exists()) {
 				setObject(snapshot.val());
+				// Set initial data listeners via handleChildChanged running from root
 				createListeners(snapshot);
 			}
 		}
@@ -174,6 +186,8 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		update(ref(db), updates);
 	};
 
+	// If an empty object is written ({}, []) then the state variable will be updated but not the live database
+	// This shouldn't matter as `diff` will also not pick up on these changes until data is actually written inside this object
 	function updateObject(updater: (newObject: T) => T) {
 		setObject((prev) => {
 			const newObject = updater(prev as T);
@@ -183,5 +197,11 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		});
 	}
 
-	return [object, updateObject];
+	return [
+		object,
+		updateObject,
+		() => {
+			console.log(listenersRef.current);
+		},
+	];
 }
