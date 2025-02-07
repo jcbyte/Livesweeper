@@ -1,8 +1,9 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
 import { Spinner } from "@heroui/spinner";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import Confetti from "react-confetti";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useAlert } from "../components/Alert";
@@ -41,8 +42,6 @@ export default function GamePage() {
 			return true;
 		}
 	}
-
-	// todo win/lose animations
 
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		const now: number = Date.now();
@@ -119,6 +118,36 @@ export default function GamePage() {
 		}
 	}, [game]);
 
+	const [showConfetti, setShowConfetti] = useState<boolean>(false);
+	const boardAnimation = useAnimation();
+	async function handleBoardWinAnimation() {
+		await boardAnimation.start({
+			scale: [1, 0.8, 1],
+			transition: {
+				duration: 1,
+				ease: "easeInOut",
+			},
+		});
+	}
+	async function handleBoardLoseAnimation() {
+		await boardAnimation.start({
+			x: [0, -20, 20, -20, 20, 0],
+			y: [0, 10, -10, 0, 10, -10, 0, 10, -10, 0],
+			transition: {
+				duration: 0.4,
+				ease: "easeIn",
+			},
+		});
+	}
+
+	useEffect(() => {
+		if (game?.state === "win") {
+			setShowConfetti(true);
+		} else if (game?.state === "lost") {
+			handleBoardLoseAnimation();
+		}
+	}, [game?.state]);
+
 	return (
 		<>
 			<motion.div
@@ -184,7 +213,11 @@ export default function GamePage() {
 									</div>
 								</div>
 
-								<div className="relative bg-gray-900/40 p-8 rounded-lg shadow-lg w-full z-10" ref={boardRef}>
+								<motion.div
+									className="relative bg-gray-900/40 p-8 rounded-lg shadow-lg w-full z-10"
+									animate={boardAnimation}
+									ref={boardRef}
+								>
 									<Board
 										game={game}
 										onCellClick={(row: number, col: number) => {
@@ -218,7 +251,18 @@ export default function GamePage() {
 									/>
 
 									<LiveCursors yourUuid={playerUuidRef.current} players={game.players} boardRef={boardRef.current} />
-								</div>
+
+									{showConfetti && (
+										<Confetti
+											recycle={false}
+											numberOfPieces={400}
+											width={boardRef.current?.offsetWidth}
+											height={boardRef.current?.offsetHeight}
+											initialVelocityY={{ min: 0, max: 10 }}
+											onConfettiComplete={() => setShowConfetti(false)}
+										/>
+									)}
+								</motion.div>
 							</motion.div>
 
 							<AnimatePresence propagate>
