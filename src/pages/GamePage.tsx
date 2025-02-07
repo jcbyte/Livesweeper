@@ -38,7 +38,7 @@ export default function GamePage() {
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
 			return false;
 		} else {
-			wait(1000); // ? Can remove this to speed up loading
+			await wait(1000); // ? Can remove this to speed up loading
 			setGameExists(true);
 			return true;
 		}
@@ -299,7 +299,7 @@ export default function GamePage() {
 						</div>
 					</>
 				) : (
-					<div className="overflow-hidden" key="loading-screen-wrapper">
+					<motion.div className="overflow-hidden" key="loading-screen-wrapper">
 						<motion.div
 							key="loading-screen"
 							className="flex flex-col justify-center items-center h-screen"
@@ -312,7 +312,7 @@ export default function GamePage() {
 							<p className="text-2xl text-center text-pink-200 mb-8">Loading Game: {code}</p>
 							<Spinner color="secondary" size="lg" />
 						</motion.div>
-					</div>
+					</motion.div>
 				)}
 			</AnimatePresence>
 		</>
