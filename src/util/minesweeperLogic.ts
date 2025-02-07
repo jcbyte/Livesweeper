@@ -1,7 +1,5 @@
 import { BoardData, BoardSizeData, CellData, GameData } from "../types";
 
-// todo generate without checking after random as it takes too long for lots of bombs
-
 const SAFE_RADIUS: number = 2;
 export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col: number }): BoardData {
 	const safeTiles = SAFE_RADIUS === 0 ? 0 : (2 * SAFE_RADIUS - 1) ** 2;
@@ -14,18 +12,21 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 				.fill(null)
 				.map(() => ({ revealed: false, flagged: false, value: 0 }))
 		);
-	let minesPlaced = 0;
 
-	while (minesPlaced < bombs) {
-		const row = Math.floor(Math.random() * boardSize.rows);
-		const col = Math.floor(Math.random() * boardSize.cols);
+	const availableCells: { row: number; col: number }[] = [];
+	for (let row = 0; row < boardSize.rows; row++) {
+		for (let col = 0; col < boardSize.cols; col++) {
+			if (Math.abs(row - safe.row) >= SAFE_RADIUS || Math.abs(col - safe.col) >= SAFE_RADIUS) {
+				availableCells.push({ row, col });
+			}
+		}
+	}
 
-		if (board[row][col].value === "bomb") continue;
-		if (Math.abs(row - safe.row) < SAFE_RADIUS) continue;
-		if (Math.abs(col - safe.col) < SAFE_RADIUS) continue;
+	for (let i = 0; i < bombs; i++) {
+		const randomIndex = Math.floor(Math.random() * availableCells.length);
+		const { row, col } = availableCells.splice(randomIndex, 1)[0];
 
 		board[row][col].value = "bomb";
-		minesPlaced++;
 
 		// Increment the count for adjacent cells
 		for (let i = -1; i <= 1; i++) {
