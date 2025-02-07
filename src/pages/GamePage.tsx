@@ -97,7 +97,6 @@ export default function GamePage() {
 	}, []);
 
 	// todo fix uncommenting player updates causes the game to immediately crash
-	// todo fix framer motion gets stuck when retiring to home page just after resetting
 
 	useEffect(() => {
 		if (game) {
@@ -154,6 +153,7 @@ export default function GamePage() {
 	return (
 		<>
 			<motion.div
+				key="home-button"
 				className="fixed top-4 left-4"
 				initial={{ y: "calc(-100% - 1rem)" }}
 				animate={{ y: 0 }}
@@ -176,6 +176,7 @@ export default function GamePage() {
 					<>
 						<div className="flex flex-col items-center h-full py-12">
 							<motion.div
+								key="title-wrapper"
 								className="flex flex-col items-center gap-2 mb-4"
 								initial={{ y: "calc(-100% - 3rem)" }}
 								animate={{ y: 0 }}
@@ -191,6 +192,7 @@ export default function GamePage() {
 							</motion.div>
 
 							<motion.div
+								key="board-wrapper"
 								className="max-w-[1024px] w-full px-8"
 								initial={{ scale: 0 }}
 								animate={{ scale: 1 }}
@@ -217,6 +219,7 @@ export default function GamePage() {
 								</div>
 
 								<motion.div
+									key="board"
 									className="relative bg-gray-900/40 p-8 rounded-lg shadow-lg w-full z-10"
 									animate={boardAnimation}
 									ref={boardRef}
@@ -268,33 +271,32 @@ export default function GamePage() {
 								</motion.div>
 							</motion.div>
 
-							<AnimatePresence propagate>
-								{game.state !== "play" && (
-									<motion.div
-										className="flex flex-col items-center z-0"
-										initial={{ opacity: 0, y: "-100%" }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: "-100%" }}
-										transition={{ duration: 0.3, ease: "easeInOut" }}
+							{game.state !== "play" && (
+								<motion.div
+									key="game-state-wrapper"
+									className="flex flex-col items-center z-0"
+									initial={{ opacity: 0, y: "-100%" }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: "-100%" }}
+									transition={{ duration: 0.3, ease: "easeInOut" }}
+								>
+									<div className="text-4xl font-bold text-center text-pink-200 my-4">
+										{game.state === "win" ? "You Win" : "You Lost"}
+									</div>
+									<Button
+										color="primary"
+										isLoading={restartingGame}
+										onPress={async () => {
+											setRestartingGame(true);
+											let newGame: GameData = generateGame(game.boardSize);
+											await resetGame(code!, newGame);
+											setRestartingGame(false);
+										}}
 									>
-										<div className="text-4xl font-bold text-center text-pink-200 my-4">
-											{game.state === "win" ? "You Win" : "You Lost"}
-										</div>
-										<Button
-											color="primary"
-											isLoading={restartingGame}
-											onPress={async () => {
-												setRestartingGame(true);
-												let newGame: GameData = generateGame(game.boardSize);
-												await resetGame(code!, newGame);
-												setRestartingGame(false);
-											}}
-										>
-											Restart
-										</Button>
-									</motion.div>
-								)}
-							</AnimatePresence>
+										Restart
+									</Button>
+								</motion.div>
+							)}
 						</div>
 					</>
 				) : (
