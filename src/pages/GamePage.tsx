@@ -44,13 +44,11 @@ export default function GamePage() {
 
 	// todo win/lose animations
 
-	// todo game crashes immediately on load
-
 	function updatePlayerData(newData: Partial<PlayerData> = {}) {
 		const now: number = Date.now();
 
 		setGame((prev) => {
-			const newGame: GameData = structuredClone(prev);
+			const newGame = structuredClone(prev);
 
 			if (!newGame.players) {
 				newGame.players = {};
@@ -64,6 +62,7 @@ export default function GamePage() {
 				...newData,
 				lastActive: now,
 			};
+
 			return newGame;
 		});
 
@@ -95,31 +94,30 @@ export default function GamePage() {
 	}
 
 	useEffect(() => {
-		let keepAliveIntervalId: NodeJS.Timeout;
-		let cleanupPlayersIntervalId: NodeJS.Timeout;
+		checkGameExists();
+	}, []);
 
-		async function init() {
-			if (!(await checkGameExists())) return;
+	// todo fix uncommenting player updates causes the game to immediately crash
 
-			keepAliveIntervalId = setInterval(() => {
-				playerKeepAlive();
-			}, PLAYER_INACTIVE_TIME / 10);
+	useEffect(() => {
+		if (game) {
+			// const keepAliveIntervalId = setInterval(() => {
+			// 	playerKeepAlive();
+			// }, PLAYER_INACTIVE_TIME / 10);
 
 			cleanupPlayers(code!);
-			cleanupPlayersIntervalId = setInterval(() => {
+			const cleanupPlayersIntervalId = setInterval(() => {
 				cleanupPlayers(code!);
 			}, PLAYER_CLEANUP_TIME);
 
 			// document.addEventListener("mousemove", handleMouseMove);
+			return () => {
+				// clearInterval(keepAliveIntervalId);
+				clearInterval(cleanupPlayersIntervalId);
+				// 	document.removeEventListener("mousemove", handleMouseMove);
+			};
 		}
-		init();
-
-		return () => {
-			clearInterval(keepAliveIntervalId);
-			clearInterval(cleanupPlayersIntervalId);
-			// document.removeEventListener("mousemove", handleMouseMove);
-		};
-	}, []);
+	}, [game]);
 
 	return (
 		<>

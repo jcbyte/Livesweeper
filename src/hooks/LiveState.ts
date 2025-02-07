@@ -33,7 +33,7 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		return `/${cleanedPath}`;
 	}
 
-	function getPath(pathItems: (string | number)[]): string {
+	function collapsePath(pathItems: (string | number)[]): string {
 		return normalisePath(pathItems.join("/"));
 	}
 
@@ -55,7 +55,7 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		if (!snapshot.exists()) return;
 
 		const path = getRefPath(snapshot.ref);
-		const pathKey = getPath(path);
+		const pathKey = collapsePath(path);
 
 		// Only create listeners if they do not already exist
 		if (pathKey in listenersRef.current) return;
@@ -134,7 +134,7 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 
 			delete objectAtPath[snapshot.ref.key!];
 
-			const itemPathKey = getPath([...path, snapshot.ref.key!]);
+			const itemPathKey = collapsePath([...path, snapshot.ref.key!]);
 			unsubscribeListeners(itemPathKey);
 			delete listenersRef.current[itemPathKey];
 
@@ -162,7 +162,7 @@ export function useLiveState<T>(path: string | null): [T | undefined, (updater: 
 		const updates: Record<string, any> = {};
 
 		changes.forEach((change) => {
-			const changePath = `${pathRef.current}${getPath(change.path.slice(1))}`;
+			const changePath = `${pathRef.current}${collapsePath(change.path.slice(1))}`;
 
 			if (change.type === "CREATE" || change.type === "CHANGE") {
 				updates[changePath] = change.value;
