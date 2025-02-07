@@ -112,8 +112,8 @@ export default function MenuPage() {
 									isDisabled={creatingGame}
 									onPress={async () => {
 										setCreatingGame(true);
-										let game: GameData = generateGame(size.sizeData);
-										let code: string = await createGame(game);
+										const game: GameData = generateGame(size.sizeData);
+										const code: string = await createGame(game);
 										joinGame(code);
 										setCreatingGame(false);
 									}}

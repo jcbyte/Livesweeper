@@ -286,7 +286,7 @@ export default function GamePage() {
 										isLoading={restartingGame}
 										onPress={async () => {
 											setRestartingGame(true);
-											let newGame: GameData = generateGame(game.boardSize);
+											const newGame: GameData = generateGame(game.boardSize);
 											await resetGame(code!, newGame);
 											setRestartingGame(false);
 										}}

@@ -1,4 +1,4 @@
-import type React from "react";
+import type { MouseEvent } from "react";
 import { CellData } from "../types";
 
 export default function Cell({
@@ -28,7 +28,7 @@ export default function Cell({
 			}`}
 			style={{ containerType: "inline-size" }}
 			onClick={onClick}
-			onContextMenu={(e: React.MouseEvent) => {
+			onContextMenu={(e: MouseEvent) => {
 				e.preventDefault();
 				onRightClick();
 			}}
