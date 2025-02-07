@@ -18,15 +18,16 @@ export default function Board({
 				gridTemplateRows: `repeat(${game.boardSize.rows}, minmax(0, 1fr))`,
 			}}
 		>
-			{game.board.map((row, rowIndex) =>
-				row.map((cell, colIndex) => (
-					<Cell
-						key={`${rowIndex}-${colIndex}`}
-						cell={cell}
-						onClick={() => onCellClick(rowIndex, colIndex)}
-						onRightClick={() => onCellRightClick(rowIndex, colIndex)}
-					/>
-				))
+			{(game.board ?? Array.from({ length: game.boardSize.rows }, () => Array(game.boardSize.cols).fill(null))).map(
+				(row, rowIndex) =>
+					row.map((cell, colIndex) => (
+						<Cell
+							key={`${rowIndex}-${colIndex}`}
+							cell={cell}
+							onClick={() => onCellClick(rowIndex, colIndex)}
+							onRightClick={() => onCellRightClick(rowIndex, colIndex)}
+						/>
+					))
 			)}
 		</div>
 	);

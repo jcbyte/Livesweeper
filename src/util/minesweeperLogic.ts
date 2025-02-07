@@ -1,6 +1,6 @@
 import { BoardData, BoardSizeData, CellData, GameData } from "../types";
 
-function generateBoard(boardSize: BoardSizeData): BoardData {
+export function generateBoard(boardSize: BoardSizeData): BoardData {
 	const bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
 
 	const board: BoardData = Array(boardSize.rows)
@@ -49,7 +49,7 @@ export function generateGame(boardSize: BoardSizeData): GameData {
 
 	return {
 		state: "play",
-		board: generateBoard(boardSize),
+		board: null,
 		boardSize: boardSize,
 		players: {},
 		lastModified: now,
@@ -60,6 +60,8 @@ export function generateGame(boardSize: BoardSizeData): GameData {
 function loseGame(game: GameData) {
 	game.state = "lost";
 
+	if (!game.board) return;
+
 	game.board = game.board.map((row: CellData[]) => {
 		return row.map((cell: CellData) => {
 			return { ...cell, revealed: true };
@@ -69,6 +71,8 @@ function loseGame(game: GameData) {
 
 function winGame(game: GameData) {
 	game.state = "win";
+
+	if (!game.board) return;
 
 	game.board = game.board.map((row: CellData[]) => {
 		return row.map((cell: CellData) => {
@@ -82,13 +86,11 @@ function checkWin(board: BoardData) {
 }
 
 export function revealCell(game: GameData, row: number, col: number, initialCall: boolean = true) {
-	if (row < 0 || row >= game.boardSize.rows || col < 0 || col >= game.boardSize.cols) {
-		return;
-	}
+	if (!game.board) return;
 
-	if (game.board[row][col].revealed) {
-		return;
-	}
+	if (row < 0 || row >= game.boardSize.rows || col < 0 || col >= game.boardSize.cols) return;
+
+	if (game.board[row][col].revealed) return;
 
 	game.board[row][col].revealed = true;
 	game.board[row][col].flagged = false;

@@ -6,11 +6,13 @@ export default function Cell({
 	onClick,
 	onRightClick,
 }: {
-	cell: CellData;
+	cell: CellData | null;
 	onClick: () => void;
 	onRightClick: () => void;
 }) {
 	function getCellContent() {
+		if (!cell) return "";
+
 		if (cell.flagged) return "🚩";
 		if (!cell.revealed) return "";
 		if (cell.value === "bomb") return "💣";
@@ -20,7 +22,7 @@ export default function Cell({
 	return (
 		<div
 			className={`min-h-5 aspect-square text-purple-200 border border-gray-900 rounded-md flex items-center justify-center font-bold transition-all duration-300 ease-in-out ${
-				cell.revealed
+				cell && cell.revealed
 					? cell.value === "bomb"
 						? "bg-pink-600"
 						: "bg-purple-900/50"

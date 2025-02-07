@@ -14,7 +14,7 @@ import { cleanupPlayers, doesGameExist, getGamePath, resetGame } from "../fireba
 import { db } from "../firebase/firebase";
 import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } from "../globals";
 import { GameData, PlayerData } from "../types";
-import { generateGame, revealCell } from "../util/minesweeperLogic";
+import { generateBoard, generateGame, revealCell } from "../util/minesweeperLogic";
 import { wait } from "../util/util";
 
 export default function GamePage() {
@@ -31,6 +31,8 @@ export default function GamePage() {
 	const lastPositionUpdateRef = useRef<number>(0);
 
 	const [game, setGame] = useLiveState<GameData>(db, gameExists ? getGamePath(code!) : null);
+
+	// todo board first click creates the board
 
 	async function checkGameExists(): Promise<boolean> {
 		if (!code || !(await doesGameExist(code))) {
@@ -208,11 +210,11 @@ export default function GamePage() {
 									</div>
 									<div className="text-md font-semibold ml-auto">
 										{game.boardSize.bombs -
-											game.board.reduce(
+											(game.board?.reduce(
 												(rowCount, row) =>
 													rowCount + row.reduce((colCount, cell) => colCount + (cell.flagged ? 1 : 0), 0),
 												0
-											)}{" "}
+											) ?? 0)}{" "}
 										💣
 									</div>
 								</div>
@@ -226,9 +228,17 @@ export default function GamePage() {
 									<Board
 										game={game}
 										onCellClick={(row: number, col: number) => {
-											if (game.state !== "play") {
-												return;
+											if (!game.board) {
+												setGame((prev) => {
+													const newGame = structuredClone(prev);
+													newGame.board = generateBoard(newGame.boardSize);
+													return newGame;
+												});
+
+												return; // todo need to also do below
 											}
+
+											if (game.state !== "play") return;
 
 											if (!game.board[row][col].flagged && !game.board[row][col].revealed) {
 												setGame((prev) => {
@@ -240,14 +250,14 @@ export default function GamePage() {
 											}
 										}}
 										onCellRightClick={(row: number, col: number) => {
-											if (game.state !== "play") {
-												return;
-											}
+											if (!game.board) return;
+
+											if (game.state !== "play") return;
 
 											if (!game.board[row][col].revealed) {
 												setGame((prev) => {
 													const newGame = structuredClone(prev);
-													newGame.board[row][col].flagged = !newGame.board[row][col].flagged;
+													newGame.board![row][col].flagged = !newGame.board![row][col].flagged;
 													newGame.lastModified = Date.now();
 													return newGame;
 												});

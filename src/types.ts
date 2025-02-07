@@ -26,7 +26,7 @@ export interface GameMetaData {
 
 export interface GameData {
 	state: "play" | "lost" | "win";
-	board: BoardData;
+	board: null | BoardData;
 	boardSize: BoardSizeData;
 	players: Record<string, PlayerData>;
 	lastModified: number;
