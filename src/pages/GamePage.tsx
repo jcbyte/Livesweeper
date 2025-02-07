@@ -234,7 +234,7 @@ export default function GamePage() {
 												const newGame = structuredClone(prev);
 
 												if (!game.board) {
-													newGame.board = generateBoard(newGame.boardSize);
+													newGame.board = generateBoard(newGame.boardSize, { row: row, col: col });
 												}
 
 												if (!newGame.board![row][col].flagged && !newGame.board![row][col].revealed) {

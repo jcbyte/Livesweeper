@@ -1,9 +1,11 @@
 import { BoardData, BoardSizeData, CellData, GameData } from "../types";
 
-// todo on generate board don't generate where click
+// todo generate without checking after random as it takes too long for lots of bombs
 
-export function generateBoard(boardSize: BoardSizeData): BoardData {
-	const bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols);
+const SAFE_RADIUS: number = 2;
+export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col: number }): BoardData {
+	const safeTiles = SAFE_RADIUS === 0 ? 0 : (2 * SAFE_RADIUS - 1) ** 2;
+	const bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols - safeTiles);
 
 	const board: BoardData = Array(boardSize.rows)
 		.fill(null)
@@ -18,26 +20,28 @@ export function generateBoard(boardSize: BoardSizeData): BoardData {
 		const row = Math.floor(Math.random() * boardSize.rows);
 		const col = Math.floor(Math.random() * boardSize.cols);
 
-		if (board[row][col].value !== "bomb") {
-			board[row][col].value = "bomb";
-			minesPlaced++;
+		if (board[row][col].value === "bomb") continue;
+		if (Math.abs(row - safe.row) < SAFE_RADIUS) continue;
+		if (Math.abs(col - safe.col) < SAFE_RADIUS) continue;
 
-			// Increment the count for adjacent cells
-			for (let i = -1; i <= 1; i++) {
-				for (let j = -1; j <= 1; j++) {
-					if (i === 0 && j === 0) continue;
+		board[row][col].value = "bomb";
+		minesPlaced++;
 
-					const newRow = row + i;
-					const newCol = col + j;
-					if (
-						newRow >= 0 &&
-						newRow < boardSize.rows &&
-						newCol >= 0 &&
-						newCol < boardSize.cols &&
-						board[newRow][newCol].value !== "bomb"
-					) {
-						board[newRow][newCol].value++;
-					}
+		// Increment the count for adjacent cells
+		for (let i = -1; i <= 1; i++) {
+			for (let j = -1; j <= 1; j++) {
+				if (i === 0 && j === 0) continue;
+
+				const newRow = row + i;
+				const newCol = col + j;
+				if (
+					newRow >= 0 &&
+					newRow < boardSize.rows &&
+					newCol >= 0 &&
+					newCol < boardSize.cols &&
+					board[newRow][newCol].value !== "bomb"
+				) {
+					board[newRow][newCol].value++;
 				}
 			}
 		}
