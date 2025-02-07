@@ -97,6 +97,7 @@ export default function GamePage() {
 	}, []);
 
 	// todo fix uncommenting player updates causes the game to immediately crash
+	// todo fix framer motion gets stuck when retiring to home page just after resetting
 
 	useEffect(() => {
 		if (game) {
@@ -120,11 +121,11 @@ export default function GamePage() {
 
 	const [showConfetti, setShowConfetti] = useState<boolean>(false);
 	const boardAnimation = useAnimation();
-	async function handleBoardWinAnimation() {
+	async function handleBoardResetAnimation() {
 		await boardAnimation.start({
-			scale: [1, 0.8, 1],
+			scale: [1, 0.9, 1],
 			transition: {
-				duration: 1,
+				duration: 0.4,
 				ease: "easeInOut",
 			},
 		});
@@ -141,7 +142,9 @@ export default function GamePage() {
 	}
 
 	useEffect(() => {
-		if (game?.state === "win") {
+		if (game?.state === "play") {
+			handleBoardResetAnimation();
+		} else if (game?.state === "win") {
 			setShowConfetti(true);
 		} else if (game?.state === "lost") {
 			handleBoardLoseAnimation();

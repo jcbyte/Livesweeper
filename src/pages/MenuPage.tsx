@@ -101,7 +101,7 @@ export default function MenuPage() {
 								? { height: "auto", marginTop: 0, marginBottom: 0 }
 								: { height: 0, marginTop: -10, marginBottom: -10 }
 						}
-						transition={{ duration: 0.3 }}
+						transition={{ duration: 0.15 }}
 					>
 						{BOARD_SIZES.map((size, i) => {
 							return (
