@@ -14,13 +14,24 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 				.map(() => ({ revealed: false, flagged: false, value: 0 }))
 		);
 
-	const availableCells: { row: number; col: number }[] = [];
-	for (let row = 0; row < boardSize.rows; row++) {
-		for (let col = 0; col < boardSize.cols; col++) {
-			if (Math.abs(row - safe.row) >= SAFE_RADIUS || Math.abs(col - safe.col) >= SAFE_RADIUS) {
-				availableCells.push({ row, col });
-			}
-		}
+	const availableCells = [...Array(boardSize.rows * boardSize.cols)].map((_o, index) => {
+		return { row: Math.floor(index / boardSize.rows), col: index % boardSize.cols };
+	});
+	for (let sx = SAFE_RADIUS - 1; sx >= -(SAFE_RADIUS - 1); sx--) {
+		if (safe.row + sx < 0 || safe.row + sx > boardSize.rows) continue;
+
+		const baseStartClearCol = safe.col - (SAFE_RADIUS - 1);
+		const startClearCol = baseStartClearCol < 0 ? 0 : baseStartClearCol;
+
+		const baseDeleteColLength = 1 + (SAFE_RADIUS - 1) * 2;
+		const deleteColLength =
+			baseStartClearCol < 0
+				? baseDeleteColLength + baseStartClearCol
+				: startClearCol + baseDeleteColLength > boardSize.cols
+				? baseDeleteColLength + (boardSize.cols - startClearCol - baseDeleteColLength)
+				: baseDeleteColLength;
+
+		availableCells.splice((safe.row + sx) * boardSize.rows + startClearCol, deleteColLength);
 	}
 
 	for (let i = 0; i < bombs; i++) {
