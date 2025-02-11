@@ -16,6 +16,6 @@ export function getRandomColor(seed: string): string {
 
 export const wait = (duration: number) => new Promise<void>((resolve) => setTimeout(resolve, duration));
 
-export function random(min: number, max: number): number {
-	return Math.random() * (max - min) + min;
+export function randomInt(min: number, max: number): number {
+	return Math.floor(Math.random() * (max - min) + min);
 }

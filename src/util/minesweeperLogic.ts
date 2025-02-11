@@ -1,4 +1,5 @@
 import { BoardData, BoardSizeData, CellData, GameData } from "../types";
+import { randomInt } from "./util";
 
 const SAFE_RADIUS: number = 2;
 export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col: number }): BoardData {
@@ -23,8 +24,13 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 	}
 
 	for (let i = 0; i < bombs; i++) {
-		const randomIndex = Math.floor(Math.random() * availableCells.length);
-		const { row, col } = availableCells.splice(randomIndex, 1)[0];
+		// Fisher–Yates shuffle
+		const randomIndex = randomInt(i, availableCells.length);
+		const randomValue = availableCells[randomIndex];
+		availableCells[randomIndex] = availableCells[i];
+		// No need to swap it back in as we do not need a shuffled array, just a random sequence
+		// availableCells[i] = randomValue;
+		const { row, col } = randomValue;
 
 		board[row][col].value = "bomb";
 
