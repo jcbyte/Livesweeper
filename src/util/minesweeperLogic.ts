@@ -34,6 +34,17 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 		availableCells.splice((safe.row + sx) * boardSize.rows + startClearCol, deleteColLength);
 	}
 
+	const adjacentCells = [
+		{ deltaX: -1, deltaY: -1 },
+		{ deltaX: -1, deltaY: 0 },
+		{ deltaX: -1, deltaY: 1 },
+		{ deltaX: 0, deltaY: -1 },
+		{ deltaX: 0, deltaY: 1 },
+		{ deltaX: 1, deltaY: -1 },
+		{ deltaX: 1, deltaY: 0 },
+		{ deltaX: 1, deltaY: 1 },
+	];
+
 	for (let i = 0; i < bombs; i++) {
 		// Fisher–Yates shuffle
 		const randomIndex = randomInt(i, availableCells.length);
@@ -46,23 +57,19 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 		board[row][col].value = "bomb";
 
 		// Increment the count for adjacent cells
-		for (let i = -1; i <= 1; i++) {
-			for (let j = -1; j <= 1; j++) {
-				if (i === 0 && j === 0) continue;
-
-				const newRow = row + i;
-				const newCol = col + j;
-				if (
-					newRow >= 0 &&
-					newRow < boardSize.rows &&
-					newCol >= 0 &&
-					newCol < boardSize.cols &&
-					board[newRow][newCol].value !== "bomb"
-				) {
-					board[newRow][newCol].value++;
-				}
+		adjacentCells.forEach((adjacent) => {
+			const newRow = row + adjacent.deltaX;
+			const newCol = col + adjacent.deltaY;
+			if (
+				board[newRow][newCol].value !== "bomb" &&
+				newRow >= 0 &&
+				newRow < boardSize.rows &&
+				newCol >= 0 &&
+				newCol < boardSize.cols
+			) {
+				board[newRow][newCol].value++;
 			}
-		}
+		});
 	}
 
 	return board;
