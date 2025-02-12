@@ -1,6 +1,5 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
-import { Spinner } from "@heroui/spinner";
 import useLiveState from "firebase-live-state";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -16,6 +15,7 @@ import { PLAYER_CLEANUP_TIME, PLAYER_INACTIVE_TIME, POSITION_UPDATE_INTERVAL } f
 import { GameData, PlayerData } from "../types";
 import { generateBoard, generateGame, revealCell } from "../util/minesweeperLogic";
 import { wait } from "../util/util";
+import LoadingPage from "./LoadingPage";
 
 export default function GamePage() {
 	const { code } = useParams();
@@ -32,15 +32,13 @@ export default function GamePage() {
 
 	const [game, setGame] = useLiveState<GameData>(db, gameExists ? getGamePath(code!) : null);
 
-	// todo board first click creates the board
-
 	async function checkGameExists(): Promise<boolean> {
 		if (!code || !(await doesGameExist(code))) {
 			navigate("/");
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
 			return false;
 		} else {
-			await wait(1000); // ? Can remove this to speed up loading
+			await wait(5000); // ? Can remove this to speed up loading
 			setGameExists(true);
 			return true;
 		}
@@ -305,20 +303,7 @@ export default function GamePage() {
 						</div>
 					</>
 				) : (
-					<motion.div className="overflow-hidden" key="loading-screen-wrapper">
-						<motion.div
-							key="loading-screen"
-							className="flex flex-col justify-center items-center h-screen"
-							initial={{ x: "-100%" }}
-							animate={{ x: 0 }}
-							exit={{ x: "100%" }}
-							transition={{ duration: 0.3, ease: "easeInOut" }}
-						>
-							<h1 className="text-6xl font-bold text-center text-pink-200 mb-1">Livesweeper</h1>
-							<p className="text-2xl text-center text-pink-200 mb-8">Loading Game: {code}</p>
-							<Spinner color="secondary" size="lg" />
-						</motion.div>
-					</motion.div>
+					<LoadingPage description={`Loading Game: ${code}`} />
 				)}
 			</AnimatePresence>
 		</>
