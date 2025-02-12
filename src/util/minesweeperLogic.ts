@@ -60,14 +60,8 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 		adjacentCells.forEach((adjacent) => {
 			const newRow = row + adjacent.deltaX;
 			const newCol = col + adjacent.deltaY;
-			if (
-				board[newRow][newCol].value !== "bomb" &&
-				newRow >= 0 &&
-				newRow < boardSize.rows &&
-				newCol >= 0 &&
-				newCol < boardSize.cols
-			) {
-				board[newRow][newCol].value++;
+			if (newRow >= 0 && newRow < boardSize.rows && newCol >= 0 && newCol < boardSize.cols) {
+				if (board[newRow][newCol].value !== "bomb") board[newRow][newCol].value++;
 			}
 		});
 	}
