@@ -31,7 +31,7 @@ export default function App() {
 						<Route path="*" element={<ErrorPage error="Error 404" description="Page not found" />} />
 					</Routes>
 				) : (
-					<LoadingPage description="Initialising App" />
+					<LoadingPage key="auth-loading" unique="auth-loading" description="Initialising App" />
 				)}
 			</AnimatePresence>
 		</AlertProvider>

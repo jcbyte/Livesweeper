@@ -303,7 +303,7 @@ export default function GamePage() {
 						</div>
 					</>
 				) : (
-					<LoadingPage description={`Loading Game: ${code}`} />
+					<LoadingPage key="game-loading" unique="game-loading" description={`Loading Game: ${code}`} />
 				)}
 			</AnimatePresence>
 		</>

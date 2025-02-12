@@ -1,13 +1,11 @@
 import { Spinner } from "@heroui/spinner";
 import { motion } from "framer-motion";
 
-// todo show exit animation
-
-export default function LoadingPage({ description }: { description?: string }) {
+export default function LoadingPage({ description, unique }: { description?: string; unique: string }) {
 	return (
-		<motion.div className="overflow-hidden" key="loading-screen-wrapper">
+		<motion.div className="overflow-hidden" key={`${unique}-loading-screen-wrapper`}>
 			<motion.div
-				key="loading-screen"
+				key={`${unique}-loading-screen`}
 				className="flex flex-col justify-center items-center h-screen"
 				initial={{ x: "-100%" }}
 				animate={{ x: 0 }}
