@@ -6,16 +6,12 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 	const safeTiles = SAFE_RADIUS === 0 ? 0 : (2 * SAFE_RADIUS - 1) ** 2;
 	const bombs = Math.min(boardSize.bombs, boardSize.rows * boardSize.cols - safeTiles);
 
-	const board: BoardData = Array(boardSize.rows)
-		.fill(null)
-		.map(() =>
-			Array(boardSize.cols)
-				.fill(null)
-				.map(() => ({ revealed: false, flagged: false, value: 0 }))
-		);
+	const board: BoardData = Array.from({ length: boardSize.rows }, () =>
+		Array.from({ length: boardSize.cols }, () => ({ revealed: false, flagged: false, value: 0 }))
+	);
 
 	const availableCells = [...Array(boardSize.rows * boardSize.cols)].map((_o, index) => {
-		return { row: Math.floor(index / boardSize.rows), col: index % boardSize.cols };
+		return { row: Math.floor(index / boardSize.cols), col: index % boardSize.cols };
 	});
 	for (let sx = SAFE_RADIUS - 1; sx >= -(SAFE_RADIUS - 1); sx--) {
 		if (safe.row + sx < 0 || safe.row + sx > boardSize.rows) continue;
@@ -31,19 +27,8 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 				? baseDeleteColLength + (boardSize.cols - startClearCol - baseDeleteColLength)
 				: baseDeleteColLength;
 
-		availableCells.splice((safe.row + sx) * boardSize.rows + startClearCol, deleteColLength);
+		availableCells.splice((safe.row + sx) * boardSize.cols + startClearCol, deleteColLength);
 	}
-
-	const adjacentCells = [
-		{ deltaX: -1, deltaY: -1 },
-		{ deltaX: -1, deltaY: 0 },
-		{ deltaX: -1, deltaY: 1 },
-		{ deltaX: 0, deltaY: -1 },
-		{ deltaX: 0, deltaY: 1 },
-		{ deltaX: 1, deltaY: -1 },
-		{ deltaX: 1, deltaY: 0 },
-		{ deltaX: 1, deltaY: 1 },
-	];
 
 	for (let i = 0; i < bombs; i++) {
 		// Fisher–Yates shuffle
@@ -57,13 +42,14 @@ export function generateBoard(boardSize: BoardSizeData, safe: { row: number; col
 		board[row][col].value = "bomb";
 
 		// Increment the count for adjacent cells
-		adjacentCells.forEach((adjacent) => {
-			const newRow = row + adjacent.deltaX;
-			const newCol = col + adjacent.deltaY;
-			if (newRow >= 0 && newRow < boardSize.rows && newCol >= 0 && newCol < boardSize.cols) {
-				if (board[newRow][newCol].value !== "bomb") board[newRow][newCol].value++;
+		for (let newRow = row - 1; newRow <= row + 1; newRow++) {
+			for (let newCol = col - 1; newCol <= col + 1; newCol++) {
+				if (newRow >= 0 && newRow < boardSize.rows && newCol >= 0 && newCol < boardSize.cols) {
+					// ! For some reason TS cannot infer that board[newRow][newCol].value must be a number if it is not "bomb"
+					if (board[newRow][newCol].value !== "bomb") (board[newRow][newCol].value as number)++;
+				}
 			}
-		});
+		}
 	}
 
 	return board;
