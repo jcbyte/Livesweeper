@@ -1,6 +1,6 @@
 # <img src="public/favicon.png" height="40"> &nbsp;Livesweeper
 
-A real-time multiplayer game of collaborative Minesweeper.
+A real-time multiplayer, collaborative version of Minesweeper built with React.
 
 ## Production Build
 
