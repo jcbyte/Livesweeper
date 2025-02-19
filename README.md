@@ -4,17 +4,17 @@ A real-time multiplayer, collaborative version of Minesweeper built with React.
 
 ## Production Build
 
-[https://livesweeper.vercel.app](https://livesweeper.vercel.app)
+https://livesweeper.vercel.app
 
 ## Run Locally
 
-Install dependencies
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Start local development server
+Start local development server:
 
 ```bash
 npm run dev
