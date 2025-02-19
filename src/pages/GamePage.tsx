@@ -38,7 +38,7 @@ export default function GamePage() {
 			alert.openAlert({ color: "danger", title: "Game does not exist." }, 6000);
 			return false;
 		} else {
-			await wait(5000); // ? Can remove this to speed up loading
+			await wait(1000); // ? Can remove this to speed up loading
 			setGameExists(true);
 			return true;
 		}
