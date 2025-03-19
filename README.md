@@ -1,31 +1,25 @@
 # <img src="public/favicon.png" height="40"> &nbsp;Livesweeper
 
-A real-time multiplayer game of collaborative Minesweeper.
+A real-time multiplayer, collaborative version of Minesweeper built with React.
 
 ## Production Build
 
-[https://livesweeper.vercel.app](https://livesweeper.vercel.app)
+https://livesweeper.vercel.app
 
 ## Run Locally
 
-Install dependencies
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Start local development server
+Start local development server:
 
 ```bash
 npm run dev
 ```
 
-## Tech Stack
+## Licence
 
-**Client:** React, Typescript, TailwindCSS
-
-**Live Database:** Firestore Live Database
-
-## Authors
-
-- [@jcbyte](https://www.github.com/jcbyte)
+[Apache License 2.0](LICENSE)
