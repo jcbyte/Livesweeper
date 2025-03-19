@@ -1,6 +1,6 @@
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
-import useLiveState from "firebase-live-state";
+import useLiveState from "@jcbyte/firebase-live-state";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Confetti from "react-confetti";
